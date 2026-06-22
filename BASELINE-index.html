@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineSnaX - #SoundtrackOfUs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Outfit:wght@800;900&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0c10; 
+        }
+        h1 {
+            font-family: 'Outfit', sans-serif;
+        }
+        h2, h3 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .quote-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .grid-rows-16 {
+            grid-template-rows: repeat(16, minmax(auto, 1fr));
+        }
+
+        @keyframes rainbow-glow {
+            0% { border-color: #FF3F6C; box-shadow: 0 0 15px rgba(255,63,108,0.4); }
+            14% { border-color: #FF8C00; box-shadow: 0 0 15px rgba(255,140,0,0.4); }
+            28% { border-color: #FFDA79; box-shadow: 0 0 15px rgba(255,218,121,0.4); }
+            42% { border-color: #DEFF9A; box-shadow: 0 0 15px rgba(222,255,154,0.4); }
+            57% { border-color: #00E5FF; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
+            71% { border-color: #7B2FF7; box-shadow: 0 0 15px rgba(123,47,247,0.4); }
+            85% { border-color: #EC4899; box-shadow: 0 0 15px rgba(236,72,153,0.4); }
+            100% { border-color: #FF3F6C; box-shadow: 0 0 15px rgba(255,63,108,0.4); }
+        }
+        .rainbow-glow-border {
+            border-width: 2px;
+            animation: rainbow-glow 8s linear infinite;
+        }
+
+        @keyframes gold-pulse {
+            0%, 100% { border-color: rgba(222, 255, 154, 0.4); box-shadow: 0 0 15px rgba(222, 255, 154, 0.15); }
+            50% { border-color: rgba(218, 165, 32, 0.8); box-shadow: 0 0 25px rgba(218, 165, 32, 0.4); }
+        }
+        .gold-pulse-border {
+            border: 2px solid rgba(222, 255, 154, 0.4);
+            animation: gold-pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes heart-wobble-pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.15) rotate(3deg) translateX(-1px); }
+            50% { transform: scale(1) rotate(0deg) translateX(0); }
+            75% { transform: scale(1.1) rotate(-3deg) translateX(1px); }
+        }
+        @keyframes hue-cycle {
+            0% { filter: hue-rotate(0deg) drop-shadow(0 0 12px #FF3F6C); }
+            100% { filter: hue-rotate(360deg) drop-shadow(0 0 12px #FF3F6C); }
+        }
+        .hue-cycling-heart {
+            animation: heart-wobble-pulse 1.6s ease-in-out infinite, hue-cycle 8s linear infinite;
+        }
+
+        @keyframes button-blink-pulse-wobble {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg); 
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35), 0 0 8px rgba(239, 68, 68, 0.15);
+                filter: brightness(1);
+            }
+            20% { transform: scale(1.02) rotate(1deg); }
+            40% { transform: scale(0.98) rotate(-1deg); }
+            60% { 
+                transform: scale(1.03) rotate(1.5deg);
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.7), 0 0 15px rgba(251, 113, 133, 0.45);
+                filter: brightness(1.1);
+            }
+            80% { transform: scale(0.99) rotate(-0.5deg); }
+        }
+        .blinking-btn {
+            animation: button-blink-pulse-wobble 1.5s infinite ease-in-out;
+        }
+
+        .glass-panel {
+            background: rgba(11, 12, 16, 0.75); 
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .velvet-panel {
+            background: rgba(6, 6, 8, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(218, 165, 32, 0.25);
+        }
+
+        .fade-blur-out {
+            filter: blur(12px);
+            opacity: 0;
+            transform: translateY(-15px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .zoom-flip-out {
+            transform: scale(0.35) rotateY(180deg);
+            opacity: 0;
+            filter: blur(10px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .roll-up-in {
+            animation: rollUp 0.85s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes rollUp {
+            from { transform: translateY(100%); opacity: 0; filter: blur(10px); }
+            to { transform: translateY(0); opacity: 1; filter: blur(0); }
+        }
+
+        .cursor::after {
+            content: '|';
+            animation: blink 0.75s step-end infinite;
+            color: #DEFF9A;
+            font-weight: bold;
+        }
+        @keyframes blink {
+            from, to { color: transparent }
+            50% { color: #DEFF9A; }
+        }
+
+        .video-container {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+            overflow: hidden;
+            border-radius: 22px;
+        }
+    </style>
+</head>
+<body class="text-[#FAF6EE] h-[100dvh] w-full max-w-md mx-auto px-5 py-4 select-none overflow-hidden relative">
+
+    <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <div id="debug-hud" class="fixed bottom-14 left-4 right-4 bg-black/95 border border-red-500/50 rounded-xl p-3 z-50 text-[10px] font-mono text-green-400 space-y-1 shadow-2xl">
+        <div class="flex justify-between border-b border-white/10 pb-1 mb-1">
+            <span class="text-red-500 font-bold">⚠️ CINESNAX PIPELINE MONITOR</span>
+            <button onclick="document.getElementById('debug-hud').classList.add('hidden')" class="text-white hover:text-red-500">❌ [Tutup]</button>
+        </div>
+        <div>URL Card Parameter ID: <span id="debug-card-id" class="text-white">Mengambil...</span></div>
+        <div>Infrastruktur Base URL: <span id="debug-backend-url" class="text-yellow-400">Memeriksa...</span></div>
+        <div>Status Sinyal Jaringan: <span id="debug-api-status" class="text-yellow-400">Idle</span></div>
+    </div>
+
+    <div class="h-full w-full relative">
+
+        <div id="screen-x" class="grid grid-rows-16 h-full gap-3 w-full transition-all duration-700">
+            <div id="x-header" class="row-span-2 flex flex-col justify-center text-center">
+                <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 drop-shadow-[0_3px_12px_rgba(239,68,68,0.3)]">
+                    CineSnaX
+                </h1>
+                <h2 class="text-[13px] sm:text-[14px] font-bold tracking-wider text-gray-300 mt-1 leading-relaxed">
+                    Soundtrack-Of-Us: Couples Edition
+                </h2>
+            </div>
+
+            <div id="x-video" class="row-span-9 glass-panel rounded-3xl w-full max-w-[260px] h-full max-h-full relative overflow-hidden flex flex-col justify-start items-center p-4 shadow-2xl rainbow-glow-border self-center mx-auto">
+                <div class="absolute top-3 left-4 text-[9px] font-mono text-red-500 flex items-center gap-1.5 z-10 animate-pulse">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span>STRICT FLOW</span>
+                </div>
+                <div class="absolute top-3 right-4 text-[9px] font-mono text-gray-400 z-10">
+                    <span>PURE MODE</span>
+                </div>
+
+                <div class="flex flex-col justify-center items-center text-center w-full mt-5 shrink-0 relative z-10">
+                    <svg class="w-12 h-14 hue-cycling-heart" viewBox="0 0 24 24" fill="#FF3F6C">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span id="x-card-label" class="block text-[10px] sm:text-[11px] font-bold tracking-widest text-gray-300 mt-2 font-sans">
+                        Memuat data dari D1...
+                    </span>
+                </div>
+
+                <hr class="w-full my-2.5 border-white/10 shrink-0 relative z-10">
+
+                <div class="w-full flex-grow overflow-y-auto relative z-10 pr-1 flex items-center justify-center">
+                    <p id="x-typewritten-content" class="text-[11.5px] sm:text-[12.5px] font-medium leading-relaxed text-gray-100 tracking-wide font-sans text-center">
+                        Menghubungkan ke Edge Worker untuk memvalidasi naskah digital kartu...
+                    </p>
+                </div>
+            </div>
+
+            <div id="x-button" class="row-span-3 flex items-center justify-center shrink-0">
+                <button id="btn-x-action" disabled class="w-full bg-gray-800 text-gray-500 font-bold text-xs sm:text-sm px-4 py-3 rounded-2xl shadow-lg tracking-wide flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-spinner animate-spin"></i>
+                    <span id="btn-x-text">Mengevaluasi Kunci Jaringan...</span>
+                </button>
+            </div>
+
+            <div id="x-disclaimer" class="row-span-1 flex items-center justify-center text-center">
+                <p class="text-[9px] text-gray-500 leading-normal px-2">
+                    Strict Database Integration Mode | Anti-Fallback Architecture Active
+                </p>
+            </div>
+
+            <footer class="row-span-1 flex items-center justify-between w-full px-2 shrink-0">
+                <div id="x-logo" class="flex-1 flex justify-center items-center">
+                    <img src="TinyLogoTrans.png" style="transform: scale(1.4);" alt="AvirArivA Logo" class="h-6 w-auto object-contain" onerror="this.onerror=null; this.src='https://placehold.co/120x30/0b0c10/FAF6EE?text=AvirArivA';">
+                </div>
+                <div id="x-footer" class="flex-1 flex justify-center items-center text-center text-[9px] text-gray-600 font-semibold leading-normal">
+                    AvirArivA Culinary Studio ©️2026
+                </div>
+            </footer>
+        </div>
+
+        <div id="screen-y" class="grid grid-rows-16 h-full gap-3 w-full transition-all duration-700 hidden">
+            <div id="y-header" class="row-span-2 flex flex-col justify-center text-center opacity-75 relative z-10">
+                <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600">CineSnaX</h1>
+            </div>
+
+            <div id="y-video" class="row-span-4 glass-panel rounded-3xl w-full aspect-video relative z-30 overflow-hidden flex flex-col justify-center items-center p-1 shadow-2xl rainbow-glow-border self-center">
+                <div id="v1-heart-content" class="flex flex-col justify-center items-center text-center w-full h-full relative z-10">
+                    <svg id="pulsing-heart" class="w-14 h-16 hue-cycling-heart" viewBox="0 0 24 24" fill="#FF3F6C">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span id="v1-card-label" class="block text-[10px] sm:text-[11px] font-bold tracking-widest text-gray-300 mt-3">Card Validated</span>
+                </div>
+                <div id="v1-presentation-content" class="absolute inset-0 flex flex-col justify-center items-center text-center p-4 bg-black/90 hidden z-10">
+                    <h2 id="v1-presentation-title" class="text-sm sm:text-base font-bold text-[#DEFF9A] tracking-wide leading-relaxed font-sans"></h2>
+                </div>
+                <div id="v1-player-content" class="video-container hidden z-20"></div>
+            </div>
+
+            <div id="box-teks" class="row-span-6 rounded-2xl p-4 flex items-center justify-center border border-white/5 relative z-10 overflow-hidden" style="background: rgba(11, 12, 16, 0.25); backdrop-filter: blur(8px);">
+                <div id="text-wrapper" class="w-full text-center max-h-full overflow-y-auto">
+                    <p id="typewritten-content" class="text-[12.5px] sm:text-[13.5px] font-medium leading-relaxed text-gray-100 tracking-wide font-sans"></p>
+                </div>
+            </div>
+
+            <div id="y-button" class="row-span-2 flex items-center justify-center shrink-0 relative z-10">
+                <button id="btn-action-A6" disabled class="w-full bg-gray-800 text-gray-500 font-extrabold text-xs sm:text-sm px-4 py-3 rounded-2xl shadow-lg cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-spinner animate-spin"></i>
+                    <span>Menyiapkan proyektor...</span>
+                </button>
+            </div>
+
+            <div id="y-disclaimer" class="row-span-1 flex items-center justify-center text-center relative z-10">
+                <p class="text-[8.5px] text-gray-500 leading-normal px-2">
+                    Streamed via YouTube: <span id="y-disclaimer-url" class="text-gray-400 font-mono break-all">-</span>
+                </p>
+            </div>
+
+            <footer class="row-span-1 flex items-center justify-between w-full px-2 shrink-0">
+                <div class="flex-1 flex justify-center items-center"><img src="TinyLogoTrans.png" class="h-6 w-auto"></div>
+            </footer>
+        </div>
+
+        <div id="screen-z" class="grid grid-rows-16 h-full gap-3 w-full transition-all duration-700 hidden">
+            <div id="z-header" class="row-span-2 flex flex-col justify-center text-center opacity-75 relative z-10">
+                <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600">CineSnaX</h1>
+            </div>
+
+            <div id="z-card" class="row-span-10 velvet-panel rounded-3xl w-full relative z-10 overflow-hidden flex flex-col justify-between p-4 shadow-2xl gold-pulse-border self-center">
+                <div class="absolute top-3 right-4 text-[9px] font-mono text-amber-500/30 tracking-widest uppercase">INTERROGATION FLOW</div>
+                <div class="text-center w-full mt-2 flex-grow overflow-y-auto max-h-[75%] flex flex-col justify-center px-1">
+                    <span id="z-level-tag" class="text-[8.5px] font-bold uppercase tracking-[3px] text-amber-500 mb-2 block">Level 1</span>
+                    <h3 id="z-question-text" class="text-[13px] sm:text-[14px] font-medium leading-relaxed text-gray-100 tracking-wide font-sans quote-font italic"></h3>
+                </div>
+                <div id="z-options-container" class="grid grid-cols-2 gap-3 w-full mt-3 shrink-0">
+                    <button onclick="submitInterrogationOption(0)" id="z-opt-0" class="py-3 bg-[#121318] border border-amber-500/20 text-gray-200 font-bold text-[10.5px] rounded-xl shadow-md transition-all">[Opsi A]</button>
+                    <button onclick="submitInterrogationOption(1)" id="z-opt-1" class="py-3 bg-[#121318] border border-amber-500/20 text-gray-200 font-bold text-[10.5px] rounded-xl shadow-md transition-all">[Opsi B]</button>
+                </div>
+            </div>
+
+            <div id="z-cta-area" class="row-span-3 flex flex-col justify-center gap-2 shrink-0 relative z-10">
+                <button id="btn-save-roll" class="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-xs sm:text-sm py-4 rounded-xl shadow-lg tracking-wide blinking-btn">
+                    <span>Simpan ke Roll Film Kami 🔒</span>
+                </button>
+            </div>
+
+            <footer class="row-span-1 flex items-center justify-between w-full px-2 shrink-0">
+                <div class="flex-1 flex justify-center items-center"><img src="TinyLogoTrans.png" class="h-6 w-auto"></div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // HUBUNGKAN LANGSUNG DENGAN SUB-DOMAIN BACKEND WORKER CLOUDFLARE ANDA
+        // =========================================================================
+        const API_BASE_URL = "https://cinesnax-backend.avirariva-studio.workers.dev";
+
+        let finalYoutubeUrl = "";
+        let finalClickbaitText = ""; 
+        let finalRevealText = "";
+        let currentSessionId = ""; 
+        let isSystemRedirecting = false;
+        let btn2ClickState = 0;
+
+        let screen1StartTime = Date.now();
+        let screen2StartTime = null;
+        let screen3StartTime = null;
+        let interactionClicks = 0;
+        let timeOnScreen1 = 0;
+        let timeOnScreen2 = 0;
+        let timeOnScreen3 = 0;
+
+        let audioCtx = null, humOsc = null, humGain = null, reelTimer = null;
+
+        function initAudioFX() {
+            if (audioCtx) return;
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+        }
+
+        function playReelHum() {
+            if (!audioCtx) return;
+            try {
+                humOsc = audioCtx.createOscillator();
+                humGain = audioCtx.createGain();
+                let filter = audioCtx.createBiquadFilter();
+                humOsc.type = 'sawtooth';
+                humOsc.frequency.setValueAtTime(45, audioCtx.currentTime);
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(150, audioCtx.currentTime);
+                humGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                humOsc.connect(filter); filter.connect(humGain); humGain.connect(audioCtx.destination);
+                humOsc.start();
+                reelTimer = setInterval(() => { playProjectorClick(); }, 120);
+            } catch (err) {}
+        }
+
+        function stopReelHum() {
+            try {
+                if (humOsc) { humOsc.stop(); humOsc.disconnect(); humOsc = null; }
+                if (reelTimer) { clearInterval(reelTimer); reelTimer = null; }
+            } catch (err) {}
+        }
+
+        function playProjectorClick() {
+            if (!audioCtx) return;
+            try {
+                let bufferSize = audioCtx.sampleRate * 0.015; 
+                let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+                let noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+                let filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(600 + Math.random() * 400, audioCtx.currentTime);
+                let noiseGain = audioCtx.createGain(); noiseGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.012);
+                noise.connect(filter); filter.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+                noise.start();
+            } catch (e) {}
+        }
+
+        function playButtonClickSound() {
+            initAudioFX(); if (!audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function showToast(message, type = "success") {
+            const existingToast = document.getElementById('custom-toast');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.id = "custom-toast";
+            toast.className = "fixed top-6 left-1/2 transform -translate-x-1/2 px-5 py-3 rounded-2xl text-xs font-semibold tracking-wide shadow-2xl z-50 transition-all duration-300 flex items-center gap-2 border ";
+            if (type === "success") {
+                toast.className += "bg-[#DEFF9A] text-black border-emerald-500/20";
+                toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            } else {
+                toast.className += "bg-red-950 text-[#FAF6EE] border-red-500/30";
+                toast.innerHTML = `<i class="fa-solid fa-circle-exclamation text-red-500"></i> ${message}`;
+            }
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
+        }
+
+        // --- INTERSEPSI AMAN UNTUK MEMBONGKAR RESPONS HTML DARI WORKER ---
+        async function fetchCardData(cardId) {
+            const hudStatus = document.getElementById('debug-api-status');
+            hudStatus.textContent = "Mengirimkan Sinyal API... 📡";
+            hudStatus.className = "text-yellow-400 font-bold animate-pulse";
+
+            console.log(`[Debug Pipeline] Target URL: ${API_BASE_URL}/api/card/${cardId}`);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/card/${cardId}`);
+                console.log(`[Debug Pipeline] HTTP Status Code Terbaca: ${response.status}`);
+                
+                // Teknik Krusial: Ambil sebagai teks mentah dulu agar tidak memicu JSON parse exception
+                const responseText = await response.text();
+                
+                // Periksa jika yang dikirim balik oleh Cloudflare ternyata kode HTML halaman web
+                if (responseText.trim().startsWith("<!DOCTYPE") || responseText.includes("<html") || responseText.includes("<div")) {
+                    hudStatus.textContent = `Eror: Memuat HTML [HTTP ${response.status}]`;
+                    hudStatus.className = "text-red-500 font-bold";
+                    
+                    console.error("[Debug Pipeline] Konten HTML Bocor dari Server:\n", responseText);
+                    
+                    // Potong teks dokumen HTML agar muat dan rapi ditampilkan dalam kotak informasi eror
+                    const ringkasanHtml = responseText.replace(/<\/?[^>]+(>|$)/g, "").substring(0, 150).trim();
+                    
+                    throw new Error(`Server mengirim dokumen HTML beralih-alih JSON payload. Isi teks teks server: "${ringkasanHtml || 'Kosong/Halaman Blank'}"`);
+                }
+
+                let data = {};
+                try {
+                    data = JSON.parse(responseText);
+                } catch (jsonErr) {
+                    throw new Error(`Bukan objek JSON valid. Respon mentah: ${responseText.substring(0, 60)}`);
+                }
+                
+                if (response.ok) {
+                    hudStatus.textContent = "Koneksi D1 Aktif (200 OK)";
+                    hudStatus.className = "text-green-400 font-bold";
+                    if (data.sessionId) currentSessionId = data.sessionId;
+                    return data;
+                } else {
+                    hudStatus.textContent = `Server Error [Status ${response.status}]`;
+                    hudStatus.className = "text-red-500 font-bold";
+                    const backendMsg = data.message || data.error || "Gagal memproses data.";
+                    showToast(backendMsg, "error");
+                    throw new Error(`[Backend Error ${response.status}] ${backendMsg}`);
+                }
+            } catch (networkError) {
+                hudStatus.textContent = "Fatal: Pipeline Bermasalah";
+                hudStatus.className = "text-red-500 font-bold";
+                console.error("[Debug Pipeline] Critical Exception:", networkError);
+                showToast(`Gagal memuat: ${networkError.message}`, "error");
+                throw networkError;
+            }
+        }
+
+        // --- SISTEM PEMBACA PARAMETER URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawCardId = urlParams.get('card') || urlParams.get('card_id');
+
+        document.getElementById('debug-card-id').textContent = rawCardId || "KOSONG / NULL (?card_id= tidak dipasang)";
+        document.getElementById('debug-backend-url').textContent = API_BASE_URL;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!rawCardId) {
+                console.error("[Main Init] Parameter URL tidak ditemukan.");
+                renderCriticalUIError("Missing URL Parameter", "Aplikasi tidak menerima kunci parameter ID Kartu. Silakan tambahkan parameter pada bar URL browser Anda, contoh: <code>/?card_id=VmMzpq8F</code>");
+                return;
+            }
+
+            try {
+                const activeCard = await fetchCardData(rawCardId);
+                
+                document.getElementById('x-card-label').innerHTML = `🖼️ Registered Card: ${rawCardId} 🍿`;
+                document.getElementById('v1-card-label').innerHTML = `🖼️ Registered Card: ${rawCardId} 🍿`;
+                document.getElementById('v1-presentation-title').innerHTML = `CineSnaX presents...<br>Your Movie Video for Card ${rawCardId}`;
+
+                finalClickbaitText = activeCard.cliffhangerText || "Cliffhanger text tidak terdefinisi di database.";
+                finalRevealText = activeCard.revealText || "Reveal text tidak terdefinisi di database.";
+                finalYoutubeUrl = activeCard.youtubeId ? `https://youtu.be/${activeCard.youtubeId}` : "";
+
+                document.getElementById('y-disclaimer-url').textContent = finalYoutubeUrl || "No Link Provided";
+
+                const welcomeText = "Semesta adalah Sutradara terbaik dalam penulisan Kisah kalian sampai detik ini...<hr class='my-2 border-white/10'>Tombol proyektor telah siap dibuka. Klik tombol di bawah untuk melihat kejutan adegan tersembunyi yang ditarik langsung dari Cloudflare D1 Database Edge Network.";
+                
+                typeHtml(welcomeText, "x-typewritten-content", 20, () => {
+                    const btnX = document.getElementById('btn-x-action');
+                    btnX.disabled = false;
+                    btnX.className = "w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-xs sm:text-sm px-6 py-4 rounded-2xl shadow-lg transition-all blinking-btn cursor-pointer";
+                    document.getElementById('btn-x-text').textContent = "Buka Proyektor Film 🎬";
+                });
+
+            } catch (err) {
+                console.error("[Main Init Error] Pipa pemuatan data dihentikan akibat kegagalan fatal:", err);
+                renderCriticalUIError("Infrastruktur Gagal Merespons", err.message);
+            }
+        });
+
+        function renderCriticalUIError(title, msg) {
+            document.getElementById('x-card-label').innerHTML = `⚠️ <span class="text-red-500 font-bold">PIPELINE BREAK</span>`;
+            document.getElementById('x-typewritten-content').innerHTML = `
+                <div class="text-left font-mono bg-red-950/40 border border-red-500/30 p-3 rounded-xl space-y-2 text-xs">
+                    <span class="text-red-400 font-bold block">[ERROR: ${title}]</span>
+                    <span class="text-gray-300 block leading-relaxed break-words">${msg}</span>
+                    <hr class="border-white/10">
+                    <span class="text-[#DEFF9A] block text-[10px] leading-relaxed">💡 Petunjuk Tambahan: Jika teks di atas berisi deskripsi HTML biasa, dipastikan setelan rute DNS domain Worker Anda belum diarahkan dengan benar ke script backend index.js.</span>
+                </div>`;
+            const btnX = document.getElementById('btn-x-action');
+            btnX.disabled = true;
+            btnX.className = "w-full bg-red-950 text-red-400 border border-red-500/30 font-bold text-xs px-4 py-3 rounded-2xl cursor-not-allowed";
+            document.getElementById('btn-x-text').textContent = "Gagal Memuat Konten ❌";
+        }
+
+        // --- INTERACTION FLOW CONTROL ---
+        function typeHtml(htmlText, elementId, speed, callback) {
+            const el = document.getElementById(elementId); el.innerHTML = ""; el.classList.add('cursor');
+            let i = 0, currentText = "";
+            function type() {
+                if (i < htmlText.length) {
+                    if (htmlText.slice(i).startsWith("<br>")) { currentText += "<br>"; i += 4; }
+                    else if (htmlText.slice(i).startsWith("<hr>")) { currentText += "<hr class='my-2 border-white/10'>"; i += 4; }
+                    else { currentText += htmlText.charAt(i); i++; }
+                    el.innerHTML = currentText; setTimeout(type, speed);
+                } else { el.classList.remove('cursor'); if (callback) callback(); }
+            }
+            type();
+        }
+
+        function transitionToScreenY() {
+            playButtonClickSound(); timeOnScreen1 = Date.now() - screen1StartTime; screen2StartTime = Date.now();
+            const screenX = document.getElementById('screen-x'); screenX.classList.add('fade-blur-out');
+            setTimeout(() => {
+                screenX.classList.add('hidden');
+                const screenY = document.getElementById('screen-y'); screenY.classList.remove('hidden');
+                updateCoordinates();
+                const btnY = document.getElementById('btn-action-A6');
+                const formatHtmlText = `<span class="text-yellow-400 font-bold block text-[14.5px]">${finalClickbaitText}</span><hr class="my-2 border-white/10"><span class="text-white font-bold block text-[13.5px] drop-shadow-[0_0_8px_rgba(255,255,255,0.85)]">${finalRevealText}</span>`;
+                typeHtml(formatHtmlText, "typewritten-content", 25, () => {
+                    if (btnY) {
+                        btnY.disabled = false;
+                        btnY.className = "w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-xs sm:text-sm px-6 py-4 rounded-2xl shadow-lg transition-all blinking-btn cursor-pointer";
+                        btnY.innerHTML = "<span>Play Rekomendasi Soundtrack-Of-Us! 🎬</span>";
+                    }
+                    btn2ClickState = 1;
+                });
+            }, 600);
+        }
+
+        document.getElementById('btn-x-action').addEventListener('click', transitionToScreenY);
+
+        function getYoutubeEmbedUrl(url) {
+            let videoId = "N2ICtCO8TCw";
+            try {
+                if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
+                else if (url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
+            } catch(e) {}
+            return `https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&enablejsapi=1`;
+        }
+
+        document.getElementById('btn-action-A6').addEventListener('click', function() {
+            playButtonClickSound();
+            if (btn2ClickState === 1) {
+                this.disabled = true; this.classList.remove('blinking-btn'); this.classList.add('opacity-40');
+                document.getElementById('v1-heart-content').classList.add('zoom-flip-out');
+                setTimeout(() => {
+                    document.getElementById('v1-heart-content').classList.add('hidden');
+                    const pres = document.getElementById('v1-presentation-content'); pres.classList.remove('hidden');
+                    setTimeout(() => {
+                        pres.classList.add('fade-blur-out');
+                        setTimeout(() => {
+                            pres.classList.add('hidden');
+                            const player = document.getElementById('v1-player-content');
+                            player.innerHTML = `<iframe class="w-full h-full rounded-3xl" src="${getYoutubeEmbedUrl(finalYoutubeUrl)}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                            player.classList.remove('hidden');
+                            setTimeout(() => {
+                                this.disabled = false; this.classList.remove('opacity-40'); this.classList.add('blinking-btn');
+                                this.innerHTML = `<span>Bagaimana Menurut Sang Pemeran Utama? 🎬</span>`;
+                                btn2ClickState = 2;
+                            }, 10000); 
+                        }, 600);
+                    }, 2000);
+                }, 800);
+            } 
+            else if (btn2ClickState === 2) {
+                timeOnScreen2 = Date.now() - screen2StartTime; screen3StartTime = Date.now();
+                document.getElementById('v1-player-content').innerHTML = "";
+                initAudioFX(); playReelHum();
+                const screenY = document.getElementById('screen-y'); screenY.classList.add('fade-blur-out');
+                setTimeout(() => {
+                    screenY.classList.add('hidden');
+                    const screenZ = document.getElementById('screen-z'); screenZ.classList.remove('hidden'); screenZ.classList.add('roll-up-in');
+                    updateCoordinates(); renderQuestionState('level1');
+                }, 600);
+            }
+        });
+
+        // --- SKEMA LOGIKA BRANCHING KUIS ---
+        let currentLevel = 1; let userAnswersLog = []; let finalSummarySelected = "";
+        const interrogationTree = {
+            level1: { question: "Melihat adegan tadi, apakah terasa seperti bagian dari naskah kalian berdua, atau murni hidup orang lain?", options: [{ text: "[Naskah Film Kami]", next: "level2A" }, { text: "[Film Orang Lain]", next: "level2B" }] },
+            level2A: { question: "Sebagai pemeran utama, apakah kalian ingat adegan spesifik ini sudah pernah tayang di dunia nyata, atau belum?", options: [{ text: "[Sudah Pernah Tayang]", next: "level3A" }, { text: "[Belum Pernah]", next: "level3B" }] },
+            level2B: { question: "Berarti ini cerita dari semesta lain. Apakah kalian bersyukur tidak mengalaminya, atau justru sedikit iri ingin merasakannya?", options: [{ text: "[Syukur Terhindar]", next: "summary_deleted" }, { text: "[Ingin Mengalaminya]", next: "summary_deleted" }] },
+            level3A: { question: "Adegan ini seharusnya dibuang. Namun karena telanjur kalian alami, apakah kalian bersyukur ia lolos tayang, atau menyesalinya?", options: [{ text: "[Sangat Bersyukur]", next: "summary_glitch_positif" }, { text: "[Menyesalinya]", next: "summary_glitch_negatif" }] },
+            level3B: { question: "Karena ini belum terjadi, apakah diam-diam kalian berharap adegan ini ditayangkan kelak, atau berdoa agar tetap dihapus?", options: [{ text: "[Harap Ditayangkan]", next: "summary_teaser" }, { text: "[Biarkan Terhapus]", next: "summary_deleted_for_now" }] }
+        };
+        const summaries = {
+            summary_glitch_positif: { status: "STATUS: SEMESTA-GLITCH", text: "Adegan ini adalah error dari ruang editing Semesta. Namun kelalaian ini membawa hikmah besar. Kalian berhasil mengubah glitch menjadi masterpiece!" },
+            summary_glitch_negatif: { status: "STATUS: SEMESTA-GLITCH", text: "Adegan ini adalah error murni. Tetaplah bersabar dan berpelukan. Saatnya fokus pada happy ending berikutnya." },
+            summary_teaser: { status: "STATUS: COMING SOON TEASER", text: "Ini bukan Deleted-Scene, melainkan Trailer yang bocor! Sebentar lagi adegan manis ini akan benar-benar tayang di kehidupan nyata kalian." },
+            summary_deleted: { status: "STATUS: TRUE DELETED-SCENE", text: "Keputusan tepat! Semesta telah melakukan tugasnya dengan baik sebagai editor, menyelamatkan hubungan kalian dari drama yang tidak perlu." },
+            summary_deleted_for_now: { status: "STATUS: DELETED-SCENE (FOR NOW)", text: "Sayang sekali, adegan tersebut saat ini tidak ditulis oleh Semesta. Namun siapa tahu doa kalian didengar oleh Sang Sutradara kelak." }
+        };
+
+        window.submitInterrogationOption = function(idx) {
+            let cur = null;
+            if (currentLevel === 1) cur = interrogationTree.level1;
+            else if (currentLevel === 2) cur = userAnswersLog[0] === "[Naskah Film Kami]" ? interrogationTree.level2A : interrogationTree.level2B;
+            else if (currentLevel === 3) cur = userAnswersLog[1] === "[Sudah Pernah Tayang]" ? interrogationTree.level3A : interrogationTree.level3B;
+            if (!cur) return;
+
+            const sel = cur.options[idx]; userAnswersLog.push(sel.text);
+            if (sel.next.startsWith("summary_")) { showFinalSummaryResult(sel.next); } 
+            else { currentLevel++; renderQuestionState(sel.next); }
+        };
+
+        function renderQuestionState(key) {
+            const dataObj = interrogationTree[key];
+            document.getElementById('z-level-tag').innerText = `Level ${currentLevel}: Interogasi`;
+            document.getElementById('z-question-text').innerText = dataObj.question;
+            document.getElementById('z-opt-0').innerText = dataObj.options[0].text;
+            document.getElementById('z-opt-1').innerText = dataObj.options[1].text;
+        }
+
+        function showFinalSummaryResult(key) {
+            stopReelHum(); finalSummarySelected = key;
+            confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+            document.getElementById('z-level-tag').innerText = summaries[key].status;
+            typeHtml(summaries[key].text, "z-question-text", 25, null);
+            document.getElementById('z-options-container').innerHTML = `<div class="text-center py-2 text-[#DEFF9A] font-bold text-xs bg-amber-500/10 border border-amber-500/20 rounded-xl">🎬 EVALUASI DIKUNCI DI SERVER EDGE</div>`;
+        }
+
+        // --- TELEMETRI TRANSMISSION ---
+        async function submitUserTelemetry() {
+            const payload = {
+                sessionId: currentSessionId || crypto.randomUUID(),
+                card_id: rawCardId,
+                time_on_screen_1_ms: timeOnScreen1,
+                time_on_screen_2_ms: timeOnScreen2,
+                time_on_screen_3_ms: timeOnScreen3,
+                freetext_feedback_1: "DISABLED_TEMPORARILY",
+                freetext_feedback_2: "DISABLED_TEMPORARILY",
+                interrogation_path: userAnswersLog.join(" ➔ "),
+                final_summary_status: summaries[finalSummarySelected]?.status || "COMPLETED_WITHOUT_INTERROGATION"
+            };
+            try {
+                await fetch(`${API_BASE_URL}/api/telemetry`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch(e) { console.warn("Gagal mengirim data telemetri analitik.", e); }
+        }
+
+        document.getElementById('btn-save-roll').addEventListener('click', async function() {
+            this.disabled = true; this.innerText = "Mengunci Database... ⏳";
+            timeOnScreen3 = Date.now() - screen3StartTime;
+            await submitUserTelemetry();
+            showToast("Kenangan berharga Anda telah terpatri permanen di Cloudflare D1 Database! 🍿");
+            setTimeout(() => { location.reload(); }, 2000);
+        });
+
+        // --- AMBIENT CANVAS STYLING ---
+        const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d');
+        let particles = [], spawnY = window.innerHeight, limitY = 0;
+        function updateCoordinates() {
+            let f = document.querySelector('#screen-x footer');
+            if(!document.getElementById('screen-z').classList.contains('hidden')) f = document.querySelector('#screen-z footer');
+            else if(!document.getElementById('screen-y').classList.contains('hidden')) f = document.querySelector('#screen-y footer');
+            if(f) spawnY = f.getBoundingClientRect().top;
+        }
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updateCoordinates(); }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y || spawnY;
+                this.speedY = -(Math.random() * 0.8 + 0.4); this.speedX = Math.random() * 0.4 - 0.2;
+                this.size = Math.random() * 2 + 3; this.life = 0; this.maxLife = 200;
+            }
+            update() { this.life++; this.y += this.speedY; this.x += this.speedX; }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fillStyle = "rgba(218, 165, 32, 0.4)"; ctx.fill();
+            }
+        }
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            if(particles.length < 30 && Math.random() < 0.1) particles.push(new Particle(Math.random()*canvas.width));
+            for(let i=particles.length-1; i>=0; i--) {
+                particles[i].update(); particles[i].draw();
+                if(particles[i].life > particles[i].maxLife || particles[i].y < 0) particles.splice(i,1);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
