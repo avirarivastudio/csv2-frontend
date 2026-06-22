@@ -11,7 +11,7 @@
     <!-- Google Fonts untuk Tipografi Modern, Romantis & Estetik -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Outfit:wght@800;900&family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Outfit:wght@800;900&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
     <!-- Canvas Confetti untuk Efek Perayaan di Layar Akhir -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -458,8 +458,11 @@
 
     <!-- LOGIKA JAVASCRIPT: CLOUDFLARE EDGE WORKER INTEGRATION, AUDIO FX, & TYPEWRITER -->
     <script>
-        // --- 1. CONFIGURABLE LIVE BACKEND ENDPOINT (100% PURE CLOUDFLARE ARSITEKTUR) ---
-        // Ganti dengan domain atau Worker subdomain kustom Anda (misal: "https://api-cinesnax.avirariva.com" atau "https://cinesnax-backend.username.workers.dev")
+        // =========================================================================
+        // PENTING: Ganti URL di bawah ini dengan URL Live Worker Anda yang asli!
+        // Contoh: "https://api.avirariva.com" atau "https://cinesnax-backend.username.workers.dev"
+        // Jika masih mengandung "username.workers.dev", sistem akan memaksa simulasi fallback lokal.
+        // =========================================================================
         const API_BASE_URL = "https://cinesnax-backend.username.workers.dev";
 
         // Pustaka Konten Kartu (Fallback Plan Terstruktur jika dokumen DB bermasalah)
@@ -775,10 +778,15 @@
 
         // --- READ URL PARAMETER (CHECKPOINT 1) ---
         const urlParams = new URLSearchParams(window.location.search);
-        const rawCardId = urlParams.get('card') || "pdkt01-007"; 
+        
+        // =========================================================================
+        // PERBAIKAN UTAMA PARAMETER: Mendukung "?card=ID" DAN "?card_id=ID" sekaligus!
+        // =========================================================================
+        const rawCardId = urlParams.get('card') || urlParams.get('card_id') || "pdkt01-007"; 
         const serialNumber = rawCardId.split('-').pop();
 
         console.log("🔍 [CHECKPOINT 1] Membaca parameter URL...");
+        console.log("   - rawCardId ditarik dari URL:", rawCardId);
         document.getElementById('debug-card-id').textContent = rawCardId;
         document.getElementById('debug-backend-url').textContent = API_BASE_URL;
         if (urlParams.get('debug') === 'true') {
@@ -793,7 +801,7 @@
             // --- PROTEKSI TAMBAHAN SANDBOX: JIKA BACKEND MASIH URL PLACEHOLDER, JANGAN KIRIM FETCH ---
             // Hal ini untuk mencegah 'Failed to Fetch' akibat mencoba mengakses domain non-eksisten di sandbox
             if (API_BASE_URL.includes("username.workers.dev") || !API_BASE_URL.startsWith("http")) {
-                console.log("ℹ️ Placeholder API dideteksi. Melewati fetch jaringan untuk mencegah console error.");
+                console.log("ℹ️ Placeholder API dideteksi atau URL tidak valid. Melewati fetch jaringan untuk mencegah console error.");
                 document.getElementById('debug-api-status').textContent = "Local Mock Active";
                 document.getElementById('debug-api-status').className = "text-green-400 font-bold";
                 return getRandomFallback();
