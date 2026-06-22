@@ -174,7 +174,7 @@
             <div id="x-video" class="row-span-9 glass-panel rounded-3xl w-full max-w-[260px] h-full max-h-full relative overflow-hidden flex flex-col justify-start items-center p-4 shadow-2xl rainbow-glow-border self-center mx-auto">
                 <div class="absolute top-3 left-4 text-[9px] font-mono text-red-500 flex items-center gap-1.5 z-10 animate-pulse">
                     <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                    <span>PIPELINE DISKONTINU</span>
+                    <span>STRICT FLOW</span>
                 </div>
                 <div class="absolute top-3 right-4 text-[9px] font-mono text-gray-400 z-10">
                     <span>PURE MODE</span>
@@ -246,7 +246,7 @@
             </div>
 
             <div id="y-button" class="row-span-2 flex items-center justify-center shrink-0 relative z-10">
-                <button id="btn-action-A6" disabled class="w-full bg-gray-800 text-gray-500 font-extrabold text-xs sm:text-sm px-4 py-3 rounded-2xl shadow-lg cursor-not-allowed transitions-all duration-300 flex items-center justify-center gap-2">
+                <button id="btn-action-A6" disabled class="w-full bg-gray-800 text-gray-500 font-extrabold text-xs sm:text-sm px-4 py-3 rounded-2xl shadow-lg cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-spinner animate-spin"></i>
                     <span>Menyiapkan proyektor...</span>
                 </button>
@@ -268,9 +268,9 @@
                 <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600">CineSnaX</h1>
             </div>
 
-            <div id="z-card" class="row-span-7 velvet-panel rounded-3xl w-full relative z-10 overflow-hidden flex flex-col justify-between p-4 shadow-2xl gold-pulse-border self-center">
+            <div id="z-card" class="row-span-10 velvet-panel rounded-3xl w-full relative z-10 overflow-hidden flex flex-col justify-between p-4 shadow-2xl gold-pulse-border self-center">
                 <div class="absolute top-3 right-4 text-[9px] font-mono text-amber-500/30 tracking-widest uppercase">INTERROGATION FLOW</div>
-                <div class="text-center w-full mt-2 flex-grow overflow-y-auto max-h-[70%] flex flex-col justify-center px-1">
+                <div class="text-center w-full mt-2 flex-grow overflow-y-auto max-h-[75%] flex flex-col justify-center px-1">
                     <span id="z-level-tag" class="text-[8.5px] font-bold uppercase tracking-[3px] text-amber-500 mb-2 block">Level 1</span>
                     <h3 id="z-question-text" class="text-[13px] sm:text-[14px] font-medium leading-relaxed text-gray-100 tracking-wide font-sans quote-font italic"></h3>
                 </div>
@@ -280,19 +280,8 @@
                 </div>
             </div>
 
-            <div id="z-feedback-freetext" class="row-span-3 grid grid-cols-2 gap-3 p-3 rounded-2xl border border-white/5 relative z-10" style="background: rgba(11, 12, 16, 0.25); backdrop-filter: blur(8px);">
-                <div class="flex flex-col justify-between">
-                    <label class="text-[9px] font-bold text-amber-300/85 mb-1 uppercase tracking-wider block">💌 Pesan Pasangan:</label>
-                    <textarea id="z-freetext-1" class="w-full flex-grow bg-black/50 border border-white/10 rounded-xl p-2 text-[10.5px] text-white focus:outline-none focus:border-amber-500 font-sans resize-none" placeholder="Catatan rahasia..."></textarea>
-                </div>
-                <div class="flex flex-col justify-between">
-                    <label class="text-[9px] font-bold text-amber-300/85 mb-1 uppercase tracking-wider block">🎥 Pesan Sutradara:</label>
-                    <textarea id="z-freetext-2" class="w-full flex-grow bg-black/50 border border-white/10 rounded-xl p-2 text-[10.5px] text-white focus:outline-none focus:border-amber-500 font-sans resize-none" placeholder="Kritik/Saran..."></textarea>
-                </div>
-            </div>
-
-            <div id="z-cta-area" class="row-span-2 flex flex-col justify-center gap-2 shrink-0 relative z-10">
-                <button id="btn-save-roll" class="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-xs sm:text-sm py-4 rounded-xl shadow-lg tracking-wide blinking-btn">
+            <div id="z-cta-area" class="row-span-3 flex flex-col justify-center gap-2 shrink-0 relative z-10">
+                <button id="btn-save-roll" class="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-xs sm:text-sm py-4 rounded-xl shadow-lg tracking-wide blinking-btn">
                     <span>Simpan ke Roll Film Kami 🔒</span>
                 </button>
             </div>
@@ -305,9 +294,9 @@
 
     <script>
         // =========================================================================
-        // PENTING: ISI DENGAN URL LIVE WORKER CLOUDFLARE ANDA YANG ASLI
+        // HUBUNGKAN LANGSUNG DENGAN SUB-DOMAIN BACKEND WORKER CLOUDFLARE ANDA
         // =========================================================================
-        const API_BASE_URL = "cinesnax-backend.avirariva-studio.workers.dev";
+        const API_BASE_URL = "https://cinesnax-backend.avirariva-studio.workers.dev";
 
         let finalYoutubeUrl = "";
         let finalClickbaitText = ""; 
@@ -401,45 +390,58 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
-        // --- CORE FETCH DENGAN STRICT ERROR HANDLER (NO FALLBACK) ---
+        // --- INTERSEPSI AMAN UNTUK MEMBONGKAR RESPONS HTML DARI WORKER ---
         async function fetchCardData(cardId) {
             const hudStatus = document.getElementById('debug-api-status');
-            hudStatus.textContent = "Mengirimkan Sinyal API...";
+            hudStatus.textContent = "Mengirimkan Sinyal API... 📡";
             hudStatus.className = "text-yellow-400 font-bold animate-pulse";
 
-            console.log(`[Debug Pipeline] Target: ${API_BASE_URL}/api/card/${cardId}`);
-
-            if (API_BASE_URL.includes("username.workers.dev")) {
-                hudStatus.textContent = "ERROR: Placeholder URL Detected";
-                hudStatus.className = "text-red-500 font-bold";
-                const placeholderError = "Variabel 'API_BASE_URL' masih menggunakan nilai template placeholder. Silakan ganti ke URL live Worker Anda.";
-                showToast(placeholderError, "error");
-                throw new Error(placeholderError);
-            }
+            console.log(`[Debug Pipeline] Target URL: ${API_BASE_URL}/api/card/${cardId}`);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/card/${cardId}`);
-                console.log(`[Debug Pipeline] HTTP Response Status: ${response.status}`);
+                console.log(`[Debug Pipeline] HTTP Status Code Terbaca: ${response.status}`);
                 
-                const data = await response.json();
+                // Teknik Krusial: Ambil sebagai teks mentah dulu agar tidak memicu JSON parse exception
+                const responseText = await response.text();
+                
+                // Periksa jika yang dikirim balik oleh Cloudflare ternyata kode HTML halaman web
+                if (responseText.trim().startsWith("<!DOCTYPE") || responseText.includes("<html") || responseText.includes("<div")) {
+                    hudStatus.textContent = `Eror: Memuat HTML [HTTP ${response.status}]`;
+                    hudStatus.className = "text-red-500 font-bold";
+                    
+                    console.error("[Debug Pipeline] Konten HTML Bocor dari Server:\n", responseText);
+                    
+                    // Potong teks dokumen HTML agar muat dan rapi ditampilkan dalam kotak informasi eror
+                    const ringkasanHtml = responseText.replace(/<\/?[^>]+(>|$)/g, "").substring(0, 150).trim();
+                    
+                    throw new Error(`Server mengirim dokumen HTML beralih-alih JSON payload. Isi teks teks server: "${ringkasanHtml || 'Kosong/Halaman Blank'}"`);
+                }
+
+                let data = {};
+                try {
+                    data = JSON.parse(responseText);
+                } catch (jsonErr) {
+                    throw new Error(`Bukan objek JSON valid. Respon mentah: ${responseText.substring(0, 60)}`);
+                }
                 
                 if (response.ok) {
-                    hudStatus.textContent = "Koneksi 200 OK (Data Ditemukan)";
+                    hudStatus.textContent = "Koneksi D1 Aktif (200 OK)";
                     hudStatus.className = "text-green-400 font-bold";
                     if (data.sessionId) currentSessionId = data.sessionId;
                     return data;
                 } else {
                     hudStatus.textContent = `Server Error [Status ${response.status}]`;
                     hudStatus.className = "text-red-500 font-bold";
-                    const backendMsg = data.message || "Gagal menarik naskah dari D1.";
+                    const backendMsg = data.message || data.error || "Gagal memproses data.";
                     showToast(backendMsg, "error");
                     throw new Error(`[Backend Error ${response.status}] ${backendMsg}`);
                 }
             } catch (networkError) {
-                hudStatus.textContent = "Fatal: Connection Failed";
+                hudStatus.textContent = "Fatal: Pipeline Bermasalah";
                 hudStatus.className = "text-red-500 font-bold";
-                console.error("[Debug Pipeline] Critical Fetch Exception:", networkError);
-                showToast(`Gagal terhubung ke server: ${networkError.message}`, "error");
+                console.error("[Debug Pipeline] Critical Exception:", networkError);
+                showToast(`Gagal memuat: ${networkError.message}`, "error");
                 throw networkError;
             }
         }
@@ -448,13 +450,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         const rawCardId = urlParams.get('card') || urlParams.get('card_id');
 
-        document.getElementById('debug-card-id').textContent = rawCardId || "KOSONG / NULL (?card= tidak dipasang)";
+        document.getElementById('debug-card-id').textContent = rawCardId || "KOSONG / NULL (?card_id= tidak dipasang)";
         document.getElementById('debug-backend-url').textContent = API_BASE_URL;
 
         window.addEventListener('DOMContentLoaded', async () => {
             if (!rawCardId) {
                 console.error("[Main Init] Parameter URL tidak ditemukan.");
-                renderCriticalUIError("Missing URL Parameter", "Aplikasi tidak menerima parameter ID Kartu. Harap scan QR kembali atau gunakan format URL <code>/?card=ID_KARTU</code> pada bar browser.");
+                renderCriticalUIError("Missing URL Parameter", "Aplikasi tidak menerima kunci parameter ID Kartu. Silakan tambahkan parameter pada bar URL browser Anda, contoh: <code>/?card_id=VmMzpq8F</code>");
                 return;
             }
 
@@ -465,8 +467,8 @@
                 document.getElementById('v1-card-label').innerHTML = `🖼️ Registered Card: ${rawCardId} 🍿`;
                 document.getElementById('v1-presentation-title').innerHTML = `CineSnaX presents...<br>Your Movie Video for Card ${rawCardId}`;
 
-                finalClickbaitText = activeCard.cliffhangerText || "Cliffhanger text tidak terdefinisi";
-                finalRevealText = activeCard.revealText || "Reveal text tidak terdefinisi";
+                finalClickbaitText = activeCard.cliffhangerText || "Cliffhanger text tidak terdefinisi di database.";
+                finalRevealText = activeCard.revealText || "Reveal text tidak terdefinisi di database.";
                 finalYoutubeUrl = activeCard.youtubeId ? `https://youtu.be/${activeCard.youtubeId}` : "";
 
                 document.getElementById('y-disclaimer-url').textContent = finalYoutubeUrl || "No Link Provided";
@@ -481,7 +483,7 @@
                 });
 
             } catch (err) {
-                console.error("[Main Init Error] Proses inisialisasi dihentikan akibat kegagalan pipa data:", err);
+                console.error("[Main Init Error] Pipa pemuatan data dihentikan akibat kegagalan fatal:", err);
                 renderCriticalUIError("Infrastruktur Gagal Merespons", err.message);
             }
         });
@@ -491,9 +493,9 @@
             document.getElementById('x-typewritten-content').innerHTML = `
                 <div class="text-left font-mono bg-red-950/40 border border-red-500/30 p-3 rounded-xl space-y-2 text-xs">
                     <span class="text-red-400 font-bold block">[ERROR: ${title}]</span>
-                    <span class="text-gray-300 block leading-relaxed">${msg}</span>
+                    <span class="text-gray-300 block leading-relaxed break-words">${msg}</span>
                     <hr class="border-white/10">
-                    <span class="text-gray-500 block text-[10px]">Gunakan fitur *Inspect Element (Console Log)* untuk melihat visualisasi objek error secara mendalam.</span>
+                    <span class="text-[#DEFF9A] block text-[10px] leading-relaxed">💡 Petunjuk Tambahan: Jika teks di atas berisi deskripsi HTML biasa, dipastikan setelan rute DNS domain Worker Anda belum diarahkan dengan benar ke script backend index.js.</span>
                 </div>`;
             const btnX = document.getElementById('btn-x-action');
             btnX.disabled = true;
@@ -501,7 +503,7 @@
             document.getElementById('btn-x-text').textContent = "Gagal Memuat Konten ❌";
         }
 
-        // --- REVENUE LOGIC FLOW (SCREEN INTERACTION) ---
+        // --- INTERACTION FLOW CONTROL ---
         function typeHtml(htmlText, elementId, speed, callback) {
             const el = document.getElementById(elementId); el.innerHTML = ""; el.classList.add('cursor');
             let i = 0, currentText = "";
@@ -566,7 +568,7 @@
                                 this.disabled = false; this.classList.remove('opacity-40'); this.classList.add('blinking-btn');
                                 this.innerHTML = `<span>Bagaimana Menurut Sang Pemeran Utama? 🎬</span>`;
                                 btn2ClickState = 2;
-                            }, 10000); // Trigger tombol transisi aktif setelah 10 detik video berjalan
+                            }, 10000); 
                         }, 600);
                     }, 2000);
                 }, 800);
@@ -584,7 +586,7 @@
             }
         });
 
-        // --- SKEMA LOGIKA BRANCHING KUIS INTEROGASI ---
+        // --- SKEMA LOGIKA BRANCHING KUIS ---
         let currentLevel = 1; let userAnswersLog = []; let finalSummarySelected = "";
         const interrogationTree = {
             level1: { question: "Melihat adegan tadi, apakah terasa seperti bagian dari naskah kalian berdua, atau murni hidup orang lain?", options: [{ text: "[Naskah Film Kami]", next: "level2A" }, { text: "[Film Orang Lain]", next: "level2B" }] },
@@ -629,7 +631,7 @@
             document.getElementById('z-options-container').innerHTML = `<div class="text-center py-2 text-[#DEFF9A] font-bold text-xs bg-amber-500/10 border border-amber-500/20 rounded-xl">🎬 EVALUASI DIKUNCI DI SERVER EDGE</div>`;
         }
 
-        // --- PENGIRIMAN DATA TELEMETRI ---
+        // --- TELEMETRI TRANSMISSION ---
         async function submitUserTelemetry() {
             const payload = {
                 sessionId: currentSessionId || crypto.randomUUID(),
@@ -637,8 +639,8 @@
                 time_on_screen_1_ms: timeOnScreen1,
                 time_on_screen_2_ms: timeOnScreen2,
                 time_on_screen_3_ms: timeOnScreen3,
-                freetext_feedback_1: document.getElementById('z-freetext-1').value || "",
-                freetext_feedback_2: document.getElementById('z-freetext-2').value || "",
+                freetext_feedback_1: "DISABLED_TEMPORARILY",
+                freetext_feedback_2: "DISABLED_TEMPORARILY",
                 interrogation_path: userAnswersLog.join(" ➔ "),
                 final_summary_status: summaries[finalSummarySelected]?.status || "COMPLETED_WITHOUT_INTERROGATION"
             };
@@ -659,7 +661,7 @@
             setTimeout(() => { location.reload(); }, 2000);
         });
 
-        // --- PARTICLE ENGINE & COORDINATES STYLING ---
+        // --- AMBIENT CANVAS STYLING ---
         const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d');
         let particles = [], spawnY = window.innerHeight, limitY = 0;
         function updateCoordinates() {
