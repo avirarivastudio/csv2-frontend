@@ -489,6 +489,7 @@
         let finalRevealText = "";
         let finalCardNumberVal = "001";
         let isSystemRedirecting = false; 
+        let currentSessionId = ""; // Menyimpan Session ID unik dari Worker
 
         // --- SISTEM TELEMETRI REALTIME ---
         let screen1StartTime = Date.now();
@@ -499,7 +500,7 @@
         let timeOnScreen2 = 0;
         let timeOnScreen3 = 0;
 
-        // --- SISTEM AUDIO SYNTHESIZER VINTAGE PROJECTOR (WEB AUDIO API BRAWSER) ---
+        // --- SISTEM AUDIO SYNTHESIZER VINTAGE PROJECTOR (WEB AUDIO API BROWSER) ---
         let audioCtx = null;
         let humOsc = null;
         let humGain = null;
@@ -510,7 +511,7 @@
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             } catch (err) {
-                console.log("Web Audio API not supported in this browser.");
+                console.log("Web Audio API tidak didukung di browser ini.");
             }
         }
 
@@ -647,7 +648,7 @@
                 ]
             },
             level2A: {
-                question: "Sebagai pemeran utama, apakah kalian remember adegan spesifik ini sudah pernah tayang di dunia nyata, atau belum?",
+                question: "Sebagai pemeran utama, apakah kalian ingat adegan spesifik ini sudah pernah tayang di dunia nyata, atau belum?",
                 options: [
                     { text: "[Sudah Pernah Tayang]", next: "level3A" },
                     { text: "[Belum Pernah]", next: "level3B" }
@@ -779,9 +780,7 @@
         // --- READ URL PARAMETER (CHECKPOINT 1) ---
         const urlParams = new URLSearchParams(window.location.search);
         
-        // =========================================================================
-        // PERBAIKAN UTAMA PARAMETER: Mendukung "?card=ID" DAN "?card_id=ID" sekaligus!
-        // =========================================================================
+        // PERBAIKAN PARAMETER: Mendukung "?card=ID" DAN "?card_id=ID" sekaligus!
         const rawCardId = urlParams.get('card') || urlParams.get('card_id') || "pdkt01-007"; 
         const serialNumber = rawCardId.split('-').pop();
 
@@ -798,8 +797,8 @@
             document.getElementById('debug-api-status').textContent = "Checking URL...";
             document.getElementById('debug-api-status').className = "text-yellow-400";
 
-            // --- PROTEKSI TAMBAHAN SANDBOX: JIKA BACKEND MASIH URL PLACEHOLDER, JANGAN KIRIM FETCH ---
-            // Hal ini untuk mencegah 'Failed to Fetch' akibat mencoba mengakses domain non-eksisten di sandbox
+            // PROTEKSI TAMBAHAN SANDBOX: JIKA BACKEND MASIH URL PLACEHOLDER, JANGAN KIRIM FETCH
+            // Mencegah 'Failed to Fetch' akibat mengakses domain tiruan sebelum di-update oleh user
             if (API_BASE_URL.includes("username.workers.dev") || !API_BASE_URL.startsWith("http")) {
                 console.log("ℹ️ Placeholder API dideteksi atau URL tidak valid. Melewati fetch jaringan untuk mencegah console error.");
                 document.getElementById('debug-api-status').textContent = "Local Mock Active";
@@ -813,6 +812,12 @@
                 const response = await fetch(`${API_BASE_URL}/api/card/${cardId}`);
                 if (response.ok) {
                     const data = await response.json();
+                    
+                    // Rekam Session ID unik yang dihasilkan oleh database D1 di backend
+                    if (data.sessionId) {
+                        currentSessionId = data.sessionId;
+                    }
+
                     document.getElementById('debug-api-status').textContent = "API Success";
                     document.getElementById('debug-api-status').className = "text-green-400 font-bold";
                     return data;
@@ -820,7 +825,6 @@
                     console.warn(`Worker API merespon dengan status: ${response.status}. Menggunakan fallback.`);
                 }
             } catch (err) {
-                // Mengubah console.error menjadi console.warn agar detektor error lingkungan sandbox tidak memicu alarm kegagalan program
                 console.warn("Gagal terhubung ke Cloudflare Worker API. Menggunakan database lokal cadangan:", err);
             }
 
@@ -1101,6 +1105,7 @@
         // --- PENGIRIMAN DATA TELEMETRI REALTIME KILAT KE CLOUDFLARE WORKERS (D1 ENGINE) ---
         async function submitUserTelemetry() {
             const payload = {
+                sessionId: currentSessionId || crypto.randomUUID(),
                 card_id: rawCardId,
                 serial_number: serialNumber || "000",
                 campaign_source: urlParams.get('source') || "direct_scan",
@@ -1114,7 +1119,7 @@
                 interaction_clicks: interactionClicks,
                 local_scan_time: new Date().toISOString(),
                 
-                // Tambahan data spesifik dari interogasi Layar Z
+                // Integrasi data interogasi & ulasan opsional Layar Z
                 freetext_feedback_1: document.getElementById('z-freetext-1').value || "",
                 freetext_feedback_2: document.getElementById('z-freetext-2').value || "",
                 interrogation_path: userAnswersLog.join(" ➔ "),
@@ -1169,7 +1174,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             const activeCard = await fetchCardData(rawCardId);
             
-            finalCardNumberVal = activeCard.Card_Number || serialNumber || "001";
+            finalCardNumberVal = activeCard.Card_Number || activeCard.card_number || serialNumber || "001";
             document.getElementById('x-card-label').innerHTML = `🖼️ Deleted-Scene Card #${finalCardNumberVal} 🍿`;
             
             const btnX12 = document.getElementById('btn-x-action');
@@ -1185,9 +1190,9 @@
                 presTitleEl.innerHTML = `CineSnaX presents...<br>Your 🎥Soundtracks-Of-Us🎬 Music Video<br>for Deleted-Scene #${finalCardNumberVal}`;
             }
 
-            finalClickbaitText = activeCard.Cliffhanger_Text || `Deleted-Scene Card #${finalCardNumberVal}`;
-            finalRevealText = activeCard.Reveal_Text ? `${activeCard.Reveal_Text}` : "";
-            finalYoutubeUrl = activeCard.Youtube_URL || "https://youtu.be/N2ICtCO8TCw?si=31fDhgMQnKv8PtOB";
+            finalClickbaitText = activeCard.Cliffhanger_Text || activeCard.cliffhanger_text || `Deleted-Scene Card #${finalCardNumberVal}`;
+            finalRevealText = activeCard.Reveal_Text || activeCard.reveal_text || "";
+            finalYoutubeUrl = activeCard.Youtube_URL || (activeCard.youtube_id ? `https://youtu.be/${activeCard.youtube_id}` : "https://youtu.be/N2ICtCO8TCw?si=31fDhgMQnKv8PtOB");
 
             const disclaimerUrlEl = document.getElementById('y-disclaimer-url');
             if (disclaimerUrlEl) {
