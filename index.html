@@ -4,36 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CineSnaX - #SoundtrackOfUs</title>
+    <!-- Dependencies Pihak Ketiga -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Outfit:wght@800;900&family=Playfair+Display:ital,wght=1,400;1,600&display=swap" rel="stylesheet">
+    <!-- Trigger Confetti Kemenangan -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0d0d0c;
+            background-color: #0b0c10;
             overflow-x: hidden;
         }
-        .heading-brand {
+        h1 {
             font-family: 'Outfit', sans-serif;
         }
-        .subheading-brand {
+        h2, h3 {
             font-family: 'Space Grotesk', sans-serif;
         }
         .quote-font {
             font-family: 'Playfair Display', serif;
         }
-        /* Efek Kaca Kabur Bioskop Premium (Glassmorphism) */
+
+        /* Standard 16-Grid Vertical System */
+        .grid-rows-16 {
+            grid-template-rows: repeat(16, minmax(auto, 1fr));
+        }
+
+        @keyframes rainbow-glow {
+            0% { border-color: #FF3F6C; box-shadow: 0 0 15px rgba(255,63,108,0.4); }
+            14% { border-color: #FF8C00; box-shadow: 0 0 15px rgba(255,140,0,0.4); }
+            28% { border-color: #FFDA79; box-shadow: 0 0 15px rgba(255,218,121,0.4); }
+            42% { border-color: #DEFF9A; box-shadow: 0 0 15px rgba(222,255,154,0.4); }
+            56% { border-color: #05C1FF; box-shadow: 0 0 15px rgba(5,193,255,0.4); }
+            70% { border-color: #8D5BFF; box-shadow: 0 0 15px rgba(141,91,255,0.4); }
+            84% { border-color: #FF5BFF; box-shadow: 0 0 15px rgba(255,91,255,0.4); }
+            100% { border-color: #FF3F6C; box-shadow: 0 0 15px rgba(255,63,108,0.4); }
+        }
+
+        .rainbow-animate {
+            animation: rainbow-glow 8s infinite linear;
+        }
+
+        /* Glassmorphism Panel Bioskop */
         .glass-cinema-panel {
             background: rgba(28, 25, 23, 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(212, 175, 55, 0.12);
         }
-        /* Style Lapisan Overlay Modal Windows */
+
+        /* Style Overlay Modal Window */
         .cinesnax-modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -77,10 +101,6 @@
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
             outline: none;
         }
-        /* System 16-Grid Vertical repeats */
-        .grid-rows-16 {
-            grid-template-rows: repeat(16, minmax(auto, 1fr));
-        }
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -103,16 +123,67 @@
 </head>
 <body class="text-stone-200 selection:bg-amber-500 selection:text-black antialiased">
 
+    <!-- CANVAS ANIMASI PARTIKEL LATAR BELAKANG EMAS -->
     <canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
 
+    <!-- =================================================================== -->
+    <!-- ADVANCED ENTERPRISE DIAGNOSTIC HUD PANEL (COLLAPSIBLE)              -->
+    <!-- =================================================================== -->
+    <div class="max-w-md mx-auto px-4 pt-3 relative z-50">
+        <div class="bg-stone-900/95 border border-amber-500/30 rounded-2xl p-4 shadow-xl">
+            <button onclick="toggleDebugHud()" class="w-full flex justify-between items-center text-xs font-bold text-amber-500 tracking-wider">
+                <span><i class="fa-solid fa-bug animate-pulse mr-1"></i> CINESNAX DIAGNOSTIC PANEL</span>
+                <i id="hudToggleIcon" class="fa-solid fa-chevron-down transition-transform"></i>
+            </button>
+            
+            <div id="debugHudContent" class="mt-4 space-y-3 text-xs border-t border-stone-800 pt-3 hidden">
+                <!-- Live Configuration Info -->
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                    <div>
+                        <span class="text-stone-500 block">DEVICE UUID</span>
+                        <span id="debug-uuid" class="font-mono text-stone-300 break-all bg-stone-950 px-1 rounded block">Calculating...</span>
+                    </div>
+                    <div>
+                        <span class="text-stone-500 block">CARD ID PARAM</span>
+                        <span id="debug-card-id" class="font-mono text-stone-300 bg-stone-950 px-1 rounded block">Calculating...</span>
+                    </div>
+                </div>
+
+                <!-- Live URL Override Form -->
+                <div class="space-y-1">
+                    <span class="text-stone-500 text-[10px] block">API WORKER URL OVERRIDE (SAVED TO DEVICE)</span>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="apiOverrideInput" class="flex-grow px-2 py-1 text-xs rounded bg-stone-950 border border-stone-800 text-stone-200" placeholder="https://my-backend.workers.dev">
+                        <button onclick="saveApiOverride()" class="px-3 py-1 bg-amber-500 text-black font-bold rounded hover:bg-amber-400">Save</button>
+                    </div>
+                </div>
+
+                <!-- Self-Test Suite Section -->
+                <div class="bg-stone-950 p-2.5 rounded-lg border border-stone-800">
+                    <span class="text-[10px] font-bold text-amber-500/80 block mb-1.5">LIVE CONNECTIVITY TESTERS</span>
+                    <div class="space-y-1 text-[10px] font-mono" id="testLogsContainer">
+                        <p class="text-stone-500">Klik tombol di bawah ini untuk memulai pengujian gerbang pipa.</p>
+                    </div>
+                    <button onclick="runLiveDiagnostics()" class="w-full mt-2 py-1 bg-stone-900 border border-amber-500/20 text-amber-400 rounded text-[10px] font-bold tracking-wider uppercase hover:bg-amber-500/10">Run Self-Test Diagnostics</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER INDUK APLIKASI UTAMA (MAX-WIDTH MOBILE STANDARD) -->
     <div class="relative w-full max-w-md min-h-screen mx-auto flex flex-col bg-[#0b0c10]/95 shadow-2xl border-x border-stone-900/60 z-10 overflow-hidden">
         
+        <!-- =================================================================== -->
+        <!-- SCREEN X: SPLASH SCREEN & UNBOXING INITIALIZER                      -->
+        <!-- =================================================================== -->
         <section id="screen-x" class="absolute inset-0 w-full h-full grid grid-rows-16 p-6 z-30 bg-[#0b0c10] transition-transform duration-700 ease-in-out">
-            <div class="row-span-2 text-center flex flex-col justify-center border-b border-stone-950/40">
+            <!-- X1-X2: HEADER PLATFORM -->
+            <div onclick="toggleDebugHud()" class="row-span-2 text-center flex flex-col justify-center border-b border-stone-950/40 cursor-pointer">
                 <h1 class="heading-brand text-4xl font-black tracking-widest bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent">CineSnaX</h1>
                 <p class="subheading-brand text-[10px] uppercase font-bold tracking-[0.3em] text-amber-500/80 mt-1">#SoundtrackOfUs: Couples Edition</p>
             </div>
             
+            <!-- X3-X11: PREVIEW CINEMATIC TEASER CONTAINER -->
             <div class="row-span-9 flex items-center justify-center my-4">
                 <div class="w-full aspect-[9/16] rounded-2xl overflow-hidden border border-stone-800 bg-stone-950 shadow-inner relative flex items-center justify-center">
                     <div id="x-heart-wrapper" class="text-center space-y-2">
@@ -123,12 +194,14 @@
                 </div>
             </div>
 
+            <!-- X12-X14: INTEGRASI TOMBOL UNBOXING PEMBUKA GERBANG -->
             <div class="row-span-3 flex flex-col justify-center px-2">
                 <button id="btn-x-action" disabled class="w-full py-4 px-6 rounded-xl bg-stone-900 border border-stone-800 text-stone-500 font-extrabold tracking-widest text-sm uppercase shadow-xl cursor-not-allowed transition-all">
                     <i class="fa-solid fa-spinner animate-spin mr-2"></i> Connecting to Cloudflare...
                 </button>
             </div>
 
+            <!-- X15-X16: GLOBAL CINEMA DISCLAIMER -->
             <div class="row-span-2 flex items-center justify-center border-t border-stone-950/30">
                 <p class="text-[9px] text-stone-500 text-center leading-relaxed px-4">
                     Streamed directly from YouTube link: <span id="x-disclaimer-url" class="font-mono text-stone-400">...</span><br>
@@ -137,12 +210,17 @@
             </div>
         </section>
 
+        <!-- =================================================================== -->
+        <!-- SCREEN Y: CINEMATIC PRESENTATION & MAIN VIDEO COMPILATION           -->
+        <!-- =================================================================== -->
         <section id="screen-y" class="absolute inset-0 w-full h-full grid grid-rows-16 p-6 z-20 bg-[#0b0c10] transition-transform duration-700 ease-in-out translate-x-full hidden">
+            <!-- Y1-Y2: HEADER PLATFORM -->
             <div class="row-span-2 text-center flex flex-col justify-center border-b border-stone-950/40">
-                <h1 class="heading-brand text-4xl font-black tracking-widest bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent">CineSnaX</h1>
+                <h1 onclick="toggleDebugHud()" class="heading-brand text-4xl font-black tracking-widest bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent cursor-pointer">CineSnaX</h1>
                 <p class="subheading-brand text-[10px] uppercase font-bold tracking-[0.3em] text-amber-500/80 mt-1">#SoundtrackOfUs: Couples Edition</p>
             </div>
 
+            <!-- Y3-Y11: MAIN YOUTUBE CUSTOM CONTAINER PLAYER -->
             <div class="row-span-9 flex items-center justify-center my-4">
                 <div class="w-full aspect-[9/16] rounded-2xl overflow-hidden border border-stone-800 bg-stone-950 shadow-2xl relative flex items-center justify-center">
                     <div id="y-heart-wrapper" class="text-center p-4">
@@ -153,12 +231,14 @@
                 </div>
             </div>
 
+            <!-- Y12-Y14: PROGRESS & NEXT STAGE CONTROLLER -->
             <div class="row-span-3 flex flex-col justify-center px-2">
                 <button id="btn-y-action" disabled class="w-full py-4 px-6 rounded-xl bg-stone-950 text-stone-600 font-extrabold tracking-widest text-xs uppercase cursor-not-allowed transition-all">
                     Membaca naskah adegan...
                 </button>
             </div>
 
+            <!-- Y15-Y16: GLOBAL CINEMA DISCLAIMER -->
             <div class="row-span-2 flex items-center justify-center border-t border-stone-950/30">
                 <p class="text-[9px] text-stone-500 text-center leading-relaxed px-4">
                     Streamed directly from YouTube link: <span id="y-disclaimer-url" class="font-mono text-stone-400">...</span><br>
@@ -167,12 +247,17 @@
             </div>
         </section>
 
+        <!-- =================================================================== -->
+        <!-- SCREEN Z: INTERACTION CENTER, SURVEY, AND SYSTEM GATEWAY           -->
+        <!-- =================================================================== -->
         <section id="screen-z" class="absolute inset-0 w-full h-full grid grid-rows-16 p-6 z-10 bg-[#0b0c10] transition-transform duration-700 ease-in-out translate-x-full hidden overflow-y-auto">
-            <div class="row-span-2 text-center flex flex-col justify-center border-b border-stone-950/40 mb-2">
+            <!-- Z1-Z2: HEADER PLATFORM -->
+            <div onclick="toggleDebugHud()" class="row-span-2 text-center flex flex-col justify-center border-b border-stone-950/40 mb-2 cursor-pointer">
                 <h1 class="heading-brand text-4xl font-black tracking-widest bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent">CineSnaX</h1>
                 <p class="subheading-brand text-[10px] uppercase font-bold tracking-[0.3em] text-amber-500/80 mt-1">#SoundtrackOfUs: Couples Edition</p>
             </div>
 
+            <!-- Z3-Z11: INTERACTIVE CONTENT ZONE (DURASI FORM INTERAKSI & KUIS) -->
             <div class="row-span-9 flex flex-col justify-start space-y-4 my-2 overflow-y-auto pr-1" id="z-quiz-scroll-container">
                 <div class="glass-cinema-panel p-4 rounded-xl text-center">
                     <p class="script-text text-stone-300 text-xs sm:text-sm leading-relaxed italic">
@@ -189,21 +274,26 @@
                     <p id="z-static-header" class="text-[9px] font-bold uppercase tracking-wider text-stone-500">Naskah Deleted-Scene Anda</p>
                     <p id="z-static-texts" class="text-xs leading-relaxed text-stone-300"></p>
                     
+                    <!-- HIDDEN FEEDBACK INJECTOR FROM LEGACY ENGINE -->
                     <div id="z-feedback-box" class="hidden w-full pt-2 space-y-2">
                         <textarea id="feedback-input" maxlength="100" class="w-full h-14 p-2 bg-[#0d0d0c] text-stone-200 text-xs border border-stone-800 rounded-lg focus:outline-none focus:border-amber-500 placeholder-stone-600" placeholder="Ketik kalimat saran berharga Anda di sini (maks 100 karakter)..."></textarea>
                         <button id="btn-submit-feedback" class="w-full py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold text-[10px] rounded-lg tracking-wide uppercase shadow">Kirim Feedback 🔒</button>
                     </div>
 
+                    <!-- HIDDEN LOCAL HISTORY LIST COLLECTIONS INJECTOR -->
                     <div id="z-collection-box" class="hidden w-full pt-2 space-y-1.5">
                         <p class="text-[10px] font-bold uppercase text-amber-400 tracking-wider mb-1 text-center">🍿 Riwayat Kartu Hasil Scan:</p>
                         <div id="collection-list" class="space-y-1 max-h-[140px] overflow-y-auto pr-1"></div>
                     </div>
                 </div>
 
+                <!-- COHESIVE EDGE INTEGRATION INTERACTIVE CORRIDOR -->
                 <div id="screen-z-interactive-row" class="w-full space-y-2">
-                    </div>
+                    <!-- Dynamic Buttons injected clean by script -->
+                </div>
             </div>
 
+            <!-- Z13-Z14: ORIGINAL BUTTON AREA TO SUPPORT INTERROGATION FLUID FLOW -->
             <div id="z-button-area" class="row-span-2 flex items-center justify-center shrink-0 w-full gap-3 px-1">
                 <button id="btn-z-left" class="w-1/2 py-3.5 bg-stone-900 border border-stone-800 text-stone-300 font-bold text-xs rounded-xl shadow-md transition-all">
                     Opsi A
@@ -213,11 +303,13 @@
                 </button>
             </div>
 
+            <!-- Z15: Z-Disclaimer -->
             <div id="z-disclaimer" class="row-span-1 flex items-center justify-center text-center text-[8.5px] text-stone-500 leading-tight border-t border-stone-950/40 mt-1">
-                Streamed directly from YouTube link: <span id="z-disclaimer-url" class="font-mono text-gray-400 ml-1">...</span><br>
+                Streamed directly from YouTube link: <span id="z-disclaimer-url" class="font-mono text-stone-400 ml-1">...</span><br>
                 All rights reserved and owned by the original Creator(s).
             </div>
 
+            <!-- Z16: Footer & Logo -->
             <footer class="row-span-1 flex items-center justify-between w-full px-1 pt-1">
                 <div id="z-logo" class="flex items-center justify-start"><i class="fa-solid fa-film text-amber-500/40 text-sm"></i></div>
                 <div id="z-footer" class="text-right text-[8px] text-stone-500 font-bold">AvirArivA Studio ©️2026</div>
@@ -226,6 +318,11 @@
 
     </div>
 
+    <!-- =================================================================== -->
+    <!-- JENDELA MELAYANG POP-UP WINDOWS OVERLAYS (GLASSMORPHISM STYLE)      -->
+    <!-- =================================================================== -->
+
+    <!-- POPUP 1: FORMULIR PENDAFTARAN KLAIM KURSI WALL OF LOVE -->
     <div id="modalClaimHoF" class="cinesnax-modal-overlay">
         <div class="glass-modal-box text-center text-stone-200">
             <h3 class="text-xl heading-brand font-black tracking-widest text-amber-500 mb-1">💖 KLAIM SEAT KISAH</h3>
@@ -247,16 +344,19 @@
         </div>
     </div>
 
+    <!-- POPUP 2: TABEL KEISTIMEWAAN DAFTAR PASANGAN RELATE (WALL OF LOVE) -->
     <div id="modalListHoF" class="cinesnax-modal-overlay">
         <div class="glass-modal-box text-stone-200 flex flex-col max-h-[82vh]">
             <h3 class="text-lg heading-brand font-black tracking-widest text-center text-amber-400 mb-0.5">🔒 WALL OF LOVE</h3>
             <p class="text-[9px] subheading-brand text-stone-400 text-center mb-4 uppercase tracking-widest">Urutan Pengunci Frekuensi Adegan Ini</p>
             <div class="overflow-y-auto flex-grow pr-1 mb-5 space-y-2" id="hofTableContainer">
-                </div>
+                <!-- Data populated smoothly via JS -->
+            </div>
             <button onclick="closeCineModal('modalListHoF')" class="w-full py-2.5 text-xs font-bold rounded-lg bg-stone-900 border border-stone-800 text-amber-500/90 hover:bg-stone-800 transition">Tutup Gulungan Kitab</button>
         </div>
     </div>
 
+    <!-- POPUP 3: BRANKAS CLOUD BACKUP CENTER & IDENTITY RECOVERY (EMAIL OTP) -->
     <div id="modalBackupCenter" class="cinesnax-modal-overlay">
         <div class="glass-modal-box text-stone-200">
             <div class="flex border-b border-stone-800/80 mb-5 text-xs text-center uppercase tracking-widest font-bold">
@@ -264,6 +364,7 @@
                 <button id="tabBtnLogin" onclick="switchBackupTab('login')" class="w-1/2 pb-2 text-stone-500 transition">Restore Sesi</button>
             </div>
             
+            <!-- REGISTRATION MODE -->
             <div id="panelBackupRegister" class="space-y-4">
                 <p class="text-[10.5px] text-stone-400 leading-relaxed text-center bg-stone-950 p-3 rounded-xl border border-stone-900">
                     ⚠️ <span class="text-amber-400 font-semibold">Ponsel bisa berganti, browser bisa ter-reset.</span> Amankan seluruh pustaka koleksi kartu digital Anda agar tersimpan abadi di cloud server kami.
@@ -286,6 +387,7 @@
                 <button onclick="executeCloudBackup()" class="w-full py-3 text-xs font-bold rounded-lg bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-black shadow-md hover:brightness-110 transition">Buat Akun & Backup Koleksi</button>
             </div>
 
+            <!-- RESTORATION LOGIN MODE (DOWNLOADING OLD MASTER UUID) -->
             <div id="panelBackupLogin" class="space-y-4 hidden">
                 <p class="text-[10.5px] text-stone-400 leading-relaxed text-center bg-amber-500/5 p-3 rounded-xl border border-amber-500/15">
                     🔑 Masukkan email & password terdaftar untuk mendownload kembali Master UUID beserta seluruh pustaka koleksi kartu milik Anda ke HP ini.
@@ -308,13 +410,21 @@
         </div>
     </div>
 
+    <!-- AUDIO INFRA HUD PLACEHOLDER BANNER -->
     <div id="debug-hud" class="hidden">
         <span id="debug-card-id"></span><span id="debug-uuid"></span><span id="debug-backend-url"></span><span id="debug-api-status"></span>
     </div>
     <div id="hover-cta-modal" class="hidden"></div>
 
+    <!-- =================================================================== -->
+    <!-- LOGIKA JALUR JARINGAN FRONTEND INTERAKTIF PWA CORE SHIELD           -->
+    <!-- =================================================================== -->
     <script>
-        const API_BASE_URL = "https://cinesnax-backend.avirariva-studio.workers.dev";
+        const DEFAULT_API_URL = "https://cinesnax-backend.avirariva-studio.workers.dev";
+        let API_BASE_URL = localStorage.getItem("cinesnax_api_override") || DEFAULT_API_URL;
+
+        // Inisialisasi visual kolom input debug
+        document.getElementById("apiOverrideInput").value = API_BASE_URL;
 
         let activeCardData = null;
         let myUuid = localStorage.getItem("cinesnax_local_uuid");
@@ -328,6 +438,73 @@
             localStorage.setItem("cinesnax_local_uuid", myUuid);
         }
 
+        // Tampilkan Identitas Sesi di Diagnostik HUD
+        document.getElementById('debug-uuid').textContent = myUuid;
+
+        // --- SISTEM DIAGNOSTIK KONSOL LIVE ---
+        function toggleDebugHud() {
+            const content = document.getElementById("debugHudContent");
+            const icon = document.getElementById("hudToggleIcon");
+            const isHidden = content.classList.contains("hidden");
+            content.classList.toggle("hidden", !isHidden);
+            icon.style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
+        }
+
+        function saveApiOverride() {
+            const newUrl = document.getElementById("apiOverrideInput").value.trim();
+            if (!newUrl) {
+                localStorage.removeItem("cinesnax_api_override");
+                alert("URL Override dihapus. Menggunakan setelan default.");
+            } else {
+                localStorage.setItem("cinesnax_api_override", newUrl);
+                alert("URL Override berhasil disimpan! Melakukan reload...");
+            }
+            window.location.reload();
+        }
+
+        // Algoritma Self-Test Jaringan 4-Langkah
+        async function runLiveDiagnostics() {
+            const container = document.getElementById("testLogsContainer");
+            container.innerHTML = `<p class="text-yellow-400 animate-pulse">Memulai Pengujian Diagnostik... 📡</p>`;
+            
+            try {
+                // Test 1: Ping Worker (Pre-flight OPTIONS test)
+                container.innerHTML += `<p class="text-stone-400">&gt; Langkah 1: Mencoba Handshake OPTIONS ke Worker...</p>`;
+                const t1 = await fetch(API_BASE_URL, { method: "OPTIONS" });
+                container.innerHTML += `<p class="text-green-400">✔ OPTIONS Connection: OK (Status ${t1.status})</p>`;
+
+                // Test 2: Ambil Data Kartu
+                container.innerHTML += `<p class="text-stone-400">&gt; Langkah 2: Mengambil Data Kartu "${activeCardId}"...</p>`;
+                const t2 = await fetch(`${API_BASE_URL}/api/card/${activeCardId}?uuid=${myUuid}`);
+                const t2Data = await t2.json();
+                
+                if (t2.ok && t2Data.success) {
+                    container.innerHTML += `<p class="text-green-400">✔ Database Query D1: KONEKSI SUKSES!</p>`;
+                    container.innerHTML += `<p class="text-amber-300">✔ Info Kartu: Episode #${t2Data.card.card_number} (${t2Data.card.title || "No Title"})</p>`;
+                } else {
+                    container.innerHTML += `<p class="text-red-400">✘ API Error: ${t2Data.message || 'Gagal query'}</p>`;
+                }
+
+                // Test 3: Tarik Log Hall of Fame
+                container.innerHTML += `<p class="text-stone-400">&gt; Langkah 3: Mengunduh Sesi Hall of Fame...</p>`;
+                const t3 = await fetch(`${API_BASE_URL}/api/halloffame-list?card_id=${activeCardId}`);
+                if (t3.ok) {
+                    const t3Data = await t3.json();
+                    container.innerHTML += `<p class="text-green-400">✔ Papan Wall of Love: OK (${t3Data.list ? t3Data.list.length : 0} baris ditemukan)</p>`;
+                } else {
+                    container.innerHTML += `<p class="text-red-400">✘ HoF List: Gagal (Status ${t3.status})</p>`;
+                }
+
+                container.innerHTML += `<p class="text-green-500 font-bold mt-1">✔ DIAGNOSTIK SELESAI: SEMUA PIPA AKTIF!</p>`;
+
+            } catch (err) {
+                container.innerHTML += `<p class="text-red-500 font-bold block mt-1">✘ GALAT KRITIS TERTANGKAP:</p>`;
+                container.innerHTML += `<p class="text-red-400 break-words font-mono text-[9px] bg-red-950/50 p-2 rounded border border-red-500/20">${err.stack || err.message}</p>`;
+                container.innerHTML += `<p class="text-stone-500 leading-normal mt-1">💡 Tips: Pastikan URL Worker Anda aktif dan D1 database sudah di-seed skema tabel cards.</p>`;
+            }
+        }
+
+        // --- SISTEM PEMUTAR AUDIO ENGINE (REEL SYNTH) ---
         function initAudioFX() {
             if (audioCtx) return;
             try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
@@ -412,10 +589,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         let activeCardId = urlParams.get('card') || urlParams.get('card_id') || "destiny-001";
 
+        // Tampilkan ID Kartu aktif di Diagnostik HUD
+        document.getElementById('debug-card-id').textContent = activeCardId;
+
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/card/${activeCardId}?uuid=${myUuid}`);
-                if (!response.ok) throw new Error("Gagal memvalidasi sinyal kartu fisik.");
+                if (!response.ok) {
+                    throw new Error(`Gagal memvalidasi sinyal kartu fisik. Status Server: ${response.status}`);
+                }
                 
                 const resData = await response.json();
                 activeCardData = resData.card;
@@ -432,7 +614,25 @@
                 btnX.className = "w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-black font-extrabold tracking-widest text-sm uppercase shadow-xl transition-all border border-yellow-400/20";
                 btnX.innerHTML = `<i class="fa-solid fa-box-open mr-2 animate-pulse"></i> Unboxing Deleted-SceneShot #${activeCardData.card_number}`;
             } catch (err) {
-                showToast(err.message, "error");
+                // RENDER DETAIL EROR SEBENARNYA LANGSUNG DI LAYAR
+                const actionButton = document.getElementById('btn-x-action');
+                if (actionButton) {
+                    actionButton.disabled = true;
+                    actionButton.className = "w-full py-4 px-6 rounded-xl bg-red-950/80 border border-red-500/30 text-red-400 font-bold text-xs uppercase cursor-not-allowed";
+                    actionButton.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i> Koneksi Edge Terputus ❌`;
+                }
+
+                const videoContainer = document.getElementById('x-heart-wrapper');
+                if (videoContainer) {
+                    videoContainer.innerHTML = `
+                        <div class="text-left font-mono bg-red-950/50 border border-red-500/30 p-4 rounded-xl space-y-2 text-[10px] w-11/12 mx-auto leading-relaxed">
+                            <span class="text-red-400 font-bold block">[KRISIS PIPA EDGE NETWORK]</span>
+                            <span class="text-stone-300 block">Eror: ${err.message}</span>
+                            <hr class="border-stone-800">
+                            <span class="text-stone-500 block text-[9px]">💡 Silakan periksa dashboard Diagnostik di atas layar Anda untuk menjalankan uji mandiri (Self-Test) atau mengganti URL Worker.</span>
+                        </div>
+                    `;
+                }
             }
         });
 
@@ -463,7 +663,7 @@
             setTimeout(() => {
                 const btnY = document.getElementById('btn-y-action');
                 btnY.disabled = false;
-                btnY.className = "w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-black font-extrabold tracking-widest text-xs uppercase shadow-xl transition-all";
+                btnY.className = "w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-black font-extrabold tracking-widest text-xs uppercase shadow-xl";
                 btnY.innerHTML = `Play Rekomendasi Soundtrack Pasangan 🎬`;
             }, 1500);
         }
