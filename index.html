@@ -53,7 +53,7 @@
             pointer-events: auto;
         }
         .glass-modal-box {
-            background: rgba(34, 30, 26, 0.75);
+            background: rgba(34, 30, 26, 0.85);
             border: 1px solid rgba(212, 175, 55, 0.25);
             box-shadow: 0 0 35px rgba(212, 175, 55, 0.08), inset 0 0 15px rgba(255, 255, 255, 0.01);
             border-radius: 20px;
@@ -214,7 +214,7 @@
             </div>
 
             <div id="z-disclaimer" class="row-span-1 flex items-center justify-center text-center text-[8.5px] text-stone-500 leading-tight border-t border-stone-950/40 mt-1">
-                Streamed directly from YouTube link: <span id="z-disclaimer-url" class="font-mono text-stone-400 ml-1">...</span><br>
+                Streamed directly from YouTube link: <span id="z-disclaimer-url" class="font-mono text-gray-400 ml-1">...</span><br>
                 All rights reserved and owned by the original Creator(s).
             </div>
 
@@ -287,7 +287,7 @@
             </div>
 
             <div id="panelBackupLogin" class="space-y-4 hidden">
-                <p class="text-[11px] text-stone-400 leading-relaxed text-center bg-amber-500/5 p-3 rounded-xl border border-amber-500/15">
+                <p class="text-[10.5px] text-stone-400 leading-relaxed text-center bg-amber-500/5 p-3 rounded-xl border border-amber-500/15">
                     🔑 Masukkan email & password terdaftar untuk mendownload kembali Master UUID beserta seluruh pustaka koleksi kartu milik Anda ke HP ini.
                 </p>
                 <div>
@@ -322,7 +322,7 @@
         let isCardVerified = false;
         let audioCtx = null, humOsc = null, humGain = null, reelTimer = null;
 
-        // Auto generation helper for missing UUIDs
+        // Auto generation helper untuk UUID yang kosong
         if (!myUuid) {
             myUuid = "cx_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
             localStorage.setItem("cinesnax_local_uuid", myUuid);
@@ -383,7 +383,7 @@
         }
 
         function showToast(message, type = "success") {
-            alert(message); // Secure fallback mapping for universal lightweight toasts
+            alert(message); 
         }
 
         function openCineModal(modalId) {
@@ -780,7 +780,6 @@
             const out = await res.json();
             alert(out.message);
             if (res.ok && out.restored_uuid) {
-                // OVERWRITE SINKRONISASI RECOVERY UUID LAMA KEMBALI (2.B.5)
                 myUuid = out.restored_uuid;
                 localStorage.setItem("cinesnax_local_uuid", myUuid);
                 localStorage.setItem("cinesnax_has_account", "true");
@@ -843,8 +842,3 @@
     </script>
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(frontend_code)
-print("index.html file successfully saved via interpreter.")}
