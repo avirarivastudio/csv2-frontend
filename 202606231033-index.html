@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineSnaX - #SoundtrackOfUs</title>
+    <!-- CSS Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Outfit:wght@800;900&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+    <!-- Confetti Trigger -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0c10; 
+        }
+        h1 {
+            font-family: 'Outfit', sans-serif;
+        }
+        h2, h3 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .quote-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Standard 16-Grid Vertical System */
+        .grid-rows-16 {
+            grid-template-rows: repeat(16, minmax(auto, 1fr));
+        }
+
+        @keyframes rainbow-glow {
+            0% { border-color: #FF3F6C; box-shadow: 0 0 15px rgba(255,63,108,0.4); }
+            14% { border-color: #FF8C00; box-shadow: 0 0 15px rgba(255,140,0,0.4); }
+            28% { border-color: #FFDA79; box-shadow: 0 0 15px rgba(255,218,121,0.4); }
+            42% { border-color: #DEFF9A; box-shadow: 0 0 15px rgba(222,255,154,0.4); }
+            57% { border-color: #00E5FF; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
+            71% { border-color: #7B2FF7; box-shadow: 0 0 15px rgba(123,47,247,0.4); }
+            85% { border-color: #EC4899; box-shadow: 0 0 15px rgba(236,72,153,0.4); }
+            100% { border-color: #FF3F6C; box-shadow: 0 0 15px rgba(255,63,108,0.4); }
+        }
+        .rainbow-glow-border {
+            border-width: 2px;
+            animation: rainbow-glow 8s linear infinite;
+        }
+
+        @keyframes heart-wobble-pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.15) rotate(3deg) translateX(-1px); }
+            50% { transform: scale(1) rotate(0deg) translateX(0); }
+            75% { transform: scale(1.1) rotate(-3deg) translateX(1px); }
+        }
+        @keyframes hue-cycle {
+            0% { filter: hue-rotate(0deg) drop-shadow(0 0 12px #FF3F6C); }
+            100% { filter: hue-rotate(360deg) drop-shadow(0 0 12px #FF3F6C); }
+        }
+        .hue-cycling-heart {
+            animation: heart-wobble-pulse 1.6s ease-in-out infinite, hue-cycle 8s linear infinite;
+        }
+
+        @keyframes button-blink-pulse-wobble {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg); 
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+                filter: brightness(1);
+            }
+            20% { transform: scale(1.02) rotate(0.5deg); }
+            40% { transform: scale(0.98) rotate(-0.5deg); }
+            60% { 
+                transform: scale(1.03) rotate(1deg);
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.7);
+                filter: brightness(1.15);
+            }
+            80% { transform: scale(0.99) rotate(-0.3deg); }
+        }
+        .blinking-btn {
+            animation: button-blink-pulse-wobble 1.5s infinite ease-in-out;
+        }
+
+        .glass-panel {
+            background: rgba(11, 12, 16, 0.8); 
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fade-blur-out {
+            filter: blur(12px);
+            opacity: 0;
+            transform: translateY(-15px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .roll-up-in {
+            animation: rollUp 0.85s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes rollUp {
+            from { transform: translateY(50px); opacity: 0; filter: blur(10px); }
+            to { transform: translateY(0); opacity: 1; filter: blur(0); }
+        }
+
+        .cursor::after {
+            content: '|';
+            animation: blink 0.75s step-end infinite;
+            color: #DEFF9A;
+        }
+        @keyframes blink {
+            from, to { color: transparent }
+            50% { color: #DEFF9A; }
+        }
+    </style>
+</head>
+<body class="text-[#FAF6EE] h-[100dvh] w-full max-w-md mx-auto px-5 py-4 select-none overflow-hidden relative">
+
+    <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- FLOATING PIPELINE MONITOR UNTUK MEMBANTU PROSES DEBBUGING -->
+    <div id="debug-hud" class="fixed bottom-14 left-4 right-4 bg-black/95 border border-red-500/50 rounded-xl p-3 z-50 text-[10px] font-mono text-green-400 space-y-1 shadow-2xl">
+        <div class="flex justify-between border-b border-white/10 pb-1 mb-1">
+            <span class="text-red-500 font-bold">⚠️ CINESNAX CF 3.0 DEBUGGER</span>
+            <button onclick="document.getElementById('debug-hud').classList.add('hidden')" class="text-white hover:text-red-500">❌ [Tutup]</button>
+        </div>
+        <div>URL Parameter ID: <span id="debug-card-id" class="text-white">Mengambil...</span></div>
+        <div>Local Device UUID: <span id="debug-uuid" class="text-yellow-400">Memeriksa...</span></div>
+        <div>Base API URL: <span id="debug-backend-url" class="text-yellow-400">Mengambil...</span></div>
+        <div>Sinyal Jaringan Edge: <span id="debug-api-status" class="text-yellow-400">Menghubungkan...</span></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="h-full w-full relative">
+
+        <!-- ========================================== -->
+        <!-- SCREEN X: SPLASH SCREEN (16-Grid Vertikal) -->
+        <!-- ========================================== -->
+        <div id="screen-x" class="grid grid-rows-16 h-full gap-3 w-full transition-all duration-700">
+            <!-- X1-X2: Header (Statis & Konsisten) -->
+            <div id="x-header" class="row-span-2 flex flex-col justify-center text-center">
+                <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 drop-shadow-[0_3px_12px_rgba(239,68,68,0.3)]">
+                    CineSnaX
+                </h1>
+                <h2 class="text-[13px] font-bold tracking-wider text-gray-300 mt-0.5 leading-relaxed">
+                    SoundtraXofUs: Couples Edition
+                </h2>
+            </div>
+
+            <!-- X3-X11: X-Video (Area Visual Dinamis) -->
+            <div id="x-video" class="row-span-9 glass-panel rounded-3xl w-full max-w-[280px] h-full max-h-full relative overflow-hidden flex flex-col justify-center items-center p-5 shadow-2xl rainbow-glow-border self-center mx-auto text-center">
+                <div id="x-heart-wrapper" class="flex flex-col items-center">
+                    <svg class="w-14 h-16 hue-cycling-heart" viewBox="0 0 24 24" fill="#FF3F6C">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <p class="text-[11.5px] font-medium leading-relaxed text-gray-300 mt-4 tracking-wide">
+                        Jika memang Scene Kisah Cinta kita yang ini<br>
+                        dibuang oleh Semesta...<br>
+                        Lalu kenapa aku merasa<br>
+                        seperti DejaVu?<br>
+                        🤔💭
+                    </p>
+                </div>
+                <div id="x-iframe-wrapper" class="hidden absolute inset-0 w-full h-full bg-black">
+                    <!-- Target Youtube Shorts IFrame -->
+                </div>
+            </div>
+
+            <!-- X13-X14: X-Button -->
+            <div id="x-button-area" class="row-span-2 flex items-center justify-center shrink-0">
+                <button id="btn-x-action" disabled class="w-full h-full bg-gray-800 text-gray-500 font-bold text-[11px] px-4 py-3 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 border border-white/5 cursor-not-allowed">
+                    <span id="x-btn-main-text"><i class="fa-solid fa-spinner animate-spin"></i> Mengevaluasi Kunci Jaringan...</span>
+                </button>
+            </div>
+
+            <!-- X15: X-Disclaimer -->
+            <div id="x-disclaimer" class="row-span-1 flex items-center justify-center text-center text-[8.5px] text-gray-500 leading-tight">
+                Streamed directly from YouTube link: <span id="x-disclaimer-url" class="font-mono text-gray-400 ml-1">Loading...</span><br>
+                All rights reserved and owned by the original Creator(s).
+            </div>
+
+            <!-- X16: Footer & Logo -->
+            <footer class="row-span-1 flex items-center justify-between w-full px-2 border-t border-white/5 pt-1">
+                <div id="x-logo" class="flex items-center justify-start">
+                    <img src="TinyLogoTrans.png" alt="CineSnaX Logo" class="h-6 w-auto object-contain bg-transparent" onerror="this.onerror=null; this.src='https://placehold.co/80x25/0b0c10/FAF6EE?text=CineSnaX';">
+                </div>
+                <div id="x-footer" class="text-right text-[8.5px] text-gray-500 font-bold">
+                    AvirArivA Culinary Studio ©️2026
+                </div>
+            </footer>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN Y: CONTENT SCREEN (16-Grid Vertikal) -->
+        <!-- ========================================== -->
+        <div id="screen-y" class="grid grid-rows-16 h-full gap-3 w-full transition-all duration-700 hidden">
+            <!-- Y1-Y2: Header -->
+            <div id="y-header" class="row-span-2 flex flex-col justify-center text-center">
+                <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600">CineSnaX</h1>
+                <h2 class="text-[13px] font-bold tracking-wider text-gray-300 mt-0.5 leading-relaxed">SoundtraXofUs: Couples Edition</h2>
+            </div>
+
+            <!-- Y3-Y7: Y-Video -->
+            <div id="y-video" class="row-span-5 glass-panel rounded-3xl w-full max-w-[280px] h-full max-h-full relative overflow-hidden flex flex-col justify-center items-center p-3 shadow-2xl rainbow-glow-border self-center mx-auto text-center">
+                <div id="y-heart-wrapper" class="flex flex-col items-center">
+                    <svg class="w-11 h-12 hue-cycling-heart" viewBox="0 0 24 24" fill="#FF3F6C">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <p id="y-card-lbl" class="text-[11px] font-bold tracking-wider text-amber-400 mt-2">
+                        Kartu Deleted-Scene<br>Shot# ...
+                    </p>
+                </div>
+                <div id="y-iframe-wrapper" class="hidden absolute inset-0 w-full h-full bg-black">
+                    <!-- Embed YouTube Video Trailer -->
+                </div>
+            </div>
+
+            <!-- Y8-Y12: Y-Text -->
+            <div id="y-text" class="row-span-4 rounded-2xl p-4 flex flex-col justify-center border border-white/5 bg-black/40 overflow-hidden text-center">
+                <div id="y-text-wrapper" class="w-full max-h-full overflow-y-auto">
+                    <!-- Efek Typewriter Cliffhanger & Reveal -->
+                    <p id="y-typewritten" class="text-[12px] sm:text-[13px] font-medium leading-relaxed tracking-wide text-gray-200"></p>
+                </div>
+            </div>
+
+            <!-- Y13-Y14: Y-Button -->
+            <div id="y-button-area" class="row-span-2 flex items-center justify-center shrink-0">
+                <button id="btn-y-action" disabled class="w-full h-full bg-gray-800 text-gray-500 font-bold text-[11px] px-4 py-3 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 border border-white/5 cursor-not-allowed">
+                    <span>Memperbarui Proyektor Virtual...</span>
+                </button>
+            </div>
+
+            <!-- Y15: Y-Disclaimer -->
+            <div id="y-disclaimer" class="row-span-1 flex items-center justify-center text-center text-[8.5px] text-gray-500 leading-tight">
+                Streamed directly from YouTube link: <span id="y-disclaimer-url" class="font-mono text-gray-400 ml-1">Loading...</span><br>
+                All rights reserved and owned by the original Creator(s).
+            </div>
+
+            <!-- Y16: Footer & Logo -->
+            <footer class="row-span-1 flex items-center justify-between w-full px-2 border-t border-white/5 pt-1">
+                <div id="y-logo" class="flex items-center justify-start"><img src="TinyLogoTrans.png" class="h-6 w-auto bg-transparent"></div>
+                <div id="y-footer" class="text-right text-[8.5px] text-gray-500 font-bold">AvirArivA Culinary Studio ©️2026</div>
+            </footer>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN Z: INTERACTION SCREEN (16-Grid Vertikal) -->
+        <!-- ========================================== -->
+        <div id="screen-z" class="grid grid-rows-16 h-full gap-3 w-full transition-all duration-700 hidden">
+            <!-- Z1-Z2: Header -->
+            <div id="z-header" class="row-span-2 flex flex-col justify-center text-center">
+                <h1 class="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600">CineSnaX</h1>
+                <h2 class="text-[13px] font-bold tracking-wider text-gray-300 mt-0.5 leading-relaxed">SoundtraXofUs: Couples Edition</h2>
+            </div>
+
+            <!-- Z3-Z7: Z-TextA (Area Pertanyaan & Deskripsi Hasil) -->
+            <div id="z-texta" class="row-span-5 rounded-2xl p-4 flex flex-col justify-center items-center border border-amber-500/10 bg-gradient-to-b from-[#121318]/90 to-[#0b0c10]/95 overflow-hidden text-center relative">
+                <div class="absolute top-1.5 right-2.5 text-[8px] font-mono text-amber-500/45 tracking-widest uppercase">THE DIRECTOR'S CUT</div>
+                <div id="z-texta-wrapper" class="w-full max-h-full overflow-y-auto">
+                    <p id="z-question-lbl" class="text-[10px] font-bold uppercase tracking-[2px] text-amber-500 mb-1.5">Level 1: Interogasi</p>
+                    <p id="z-question-text" class="text-[12px] sm:text-[13px] font-medium leading-relaxed text-gray-100 italic quote-font px-1">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Z8-Z12: Z-TextB (Area Teks Terpajang & Input Feedback Opsional) -->
+            <div id="z-textb" class="row-span-5 rounded-2xl p-4 flex flex-col justify-center items-center border border-white/5 bg-black/40 overflow-hidden text-center relative">
+                <div id="z-textb-wrapper" class="w-full max-h-full overflow-y-auto space-y-1">
+                    <p id="z-static-header" class="text-[9px] font-bold uppercase tracking-[1px] text-gray-400">Naskah Deleted-Scene Anda</p>
+                    <p id="z-static-texts" class="text-[11px] leading-relaxed text-gray-300"></p>
+                </div>
+                <!-- SENSITIF FEEDBACK BOX: Diaktifkan dinamis di akhir -->
+                <div id="z-feedback-box" class="hidden w-full space-y-2">
+                    <textarea id="feedback-input" maxlength="100" class="w-full h-16 p-2 bg-[#121318] text-[#FAF6EE] text-xs border border-amber-500/20 rounded-xl focus:outline-none focus:border-amber-500 placeholder-gray-500" placeholder="Ketik saran berharga Anda di sini (maksimal 100 karakter)..."></textarea>
+                    <button id="btn-submit-feedback" class="w-full py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold text-[10.5px] rounded-lg tracking-wide uppercase shadow">Kirim Feedback 🔒</button>
+                </div>
+                <!-- LIST KOLEKSI KARTU SCAN -->
+                <div id="z-collection-box" class="hidden w-full h-full overflow-y-auto text-left space-y-1.5 pr-1">
+                    <p class="text-[10px] font-bold uppercase text-amber-500 tracking-wider mb-2 text-center">🍿 Riwayat Kartu yang Pernah Anda Scan:</p>
+                    <div id="collection-list" class="space-y-1">
+                        <!-- Clickable cards list injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Z13-Z14: Z-Button Area (Dinamis: Belah Dua atau Belah Tiga) -->
+            <div id="z-button-area" class="row-span-2 flex items-center justify-center shrink-0 w-full gap-3">
+                <button id="btn-z-left" class="w-1/2 py-4 bg-[#121318] border border-amber-500/20 text-gray-200 font-bold text-[11px] rounded-2xl shadow-md transition-all">
+                    Opsi Kiri
+                </button>
+                <button id="btn-z-right" class="w-1/2 py-4 bg-[#121318] border border-amber-500/20 text-gray-200 font-bold text-[11px] rounded-2xl shadow-md transition-all">
+                    Opsi Kanan
+                </button>
+            </div>
+
+            <!-- Z15: Z-Disclaimer -->
+            <div id="z-disclaimer" class="row-span-1 flex items-center justify-center text-center text-[8.5px] text-gray-500 leading-tight">
+                Streamed directly from YouTube link: <span id="z-disclaimer-url" class="font-mono text-gray-400 ml-1">Loading...</span><br>
+                All rights reserved and owned by the original Creator(s).
+            </div>
+
+            <!-- Z16: Footer & Logo -->
+            <footer class="row-span-1 flex items-center justify-between w-full px-2 border-t border-white/5 pt-1">
+                <div id="z-logo" class="flex items-center justify-start"><img src="TinyLogoTrans.png" class="h-6 w-auto bg-transparent"></div>
+                <div id="z-footer" class="text-right text-[8.5px] text-gray-500 font-bold">AvirArivA Culinary Studio ©️2026</div>
+            </footer>
+        </div>
+
+    </div>
+
+    <!-- HOVERING WINDOW FOR "THE END" CALL TO ACTION -->
+    <div id="hover-cta-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 hidden p-6">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-6 text-center space-y-4 border border-amber-500/30">
+            <svg class="w-10 h-10 text-amber-400 mx-auto animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500">Mari Terhubung dengan CineSnaX!</h3>
+            <p class="text-xs text-gray-300 leading-relaxed">
+                Bagikan momen tak terduga ini ke sosial media Anda. Tag akun resmi kami untuk mendapatkan rekomendasi spesial lainnya!
+            </p>
+            <div class="grid grid-cols-3 gap-2 py-2">
+                <a href="https://instagram.com" target="_blank" class="py-2.5 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                <a href="https://tiktok.com" target="_blank" class="py-2.5 bg-black border border-white/10 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1"><i class="fa-brands fa-tiktok"></i> TikTok</a>
+                <a href="https://youtube.com" target="_blank" class="py-2.5 bg-red-600 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1"><i class="fa-brands fa-youtube"></i> YouTube</a>
+            </div>
+            <div class="border-t border-white/5 pt-3 space-y-2">
+                <p class="text-[9px] text-gray-500 leading-relaxed">
+                    Sesi aman Anda telah terpatri permanen di awan Edge Cloudflare. Anda bisa menutup browser ini sekarang atau membiarkannya terbuka untuk meninjau koleksi lainnya.
+                </p>
+                <button onclick="document.getElementById('hover-cta-modal').classList.add('hidden')" class="w-full py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-all">Selesai & Tutup Pratinjau</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIKA CORE ENGINE -->
+    <script>
+        // =========================================================================
+        // HUBUNGKAN SINKRON DENGAN SUB-DOMAIN BACKEND WORKER CLOUDFLARE ANDA
+        // =========================================================================
+        const API_BASE_URL = "https://cinesnax-backend.avirariva-studio.workers.dev";
+
+        // State Global Aplikasi
+        let activeCardData = null;
+        let localUUID = "";
+        let currentSessionId = "";
+        let isCardVerified = false;
+
+        // Metrik Telemetri Internal
+        let screen1StartTime = Date.now();
+        let screen2StartTime = null;
+        let screen3StartTime = null;
+
+        // Web Audio API Synth Engine
+        let audioCtx = null, humOsc = null, humGain = null, reelTimer = null;
+
+        function initAudioFX() {
+            if (audioCtx) return;
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+        }
+
+        function playReelHum() {
+            if (!audioCtx) return;
+            try {
+                humOsc = audioCtx.createOscillator();
+                humGain = audioCtx.createGain();
+                let filter = audioCtx.createBiquadFilter();
+                humOsc.type = 'sawtooth';
+                humOsc.frequency.setValueAtTime(45, audioCtx.currentTime);
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(120, audioCtx.currentTime);
+                humGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                humOsc.connect(filter); filter.connect(humGain); humGain.connect(audioCtx.destination);
+                humOsc.start();
+                reelTimer = setInterval(() => { playProjectorClick(); }, 140);
+            } catch (err) {}
+        }
+
+        function stopReelHum() {
+            try {
+                if (humOsc) { humOsc.stop(); humOsc.disconnect(); humOsc = null; }
+                if (reelTimer) { clearInterval(reelTimer); reelTimer = null; }
+            } catch (err) {}
+        }
+
+        function playProjectorClick() {
+            if (!audioCtx) return;
+            try {
+                let bufferSize = audioCtx.sampleRate * 0.015; 
+                let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+                let noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+                let filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(500 + Math.random() * 300, audioCtx.currentTime);
+                let noiseGain = audioCtx.createGain(); noiseGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.01);
+                noise.connect(filter); filter.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+                noise.start();
+            } catch (e) {}
+        }
+
+        function playButtonClickSound() {
+            initAudioFX(); if (!audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {}
+        }
+
+        // Boks Notifikasi Estetik
+        function showToast(message, type = "success") {
+            const existingToast = document.getElementById('custom-toast');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.id = "custom-toast";
+            toast.className = "fixed top-6 left-1/2 transform -translate-x-1/2 px-5 py-3 rounded-2xl text-xs font-semibold tracking-wide shadow-2xl z-50 transition-all duration-300 flex items-center gap-2 border ";
+            if (type === "success") {
+                toast.className += "bg-[#DEFF9A] text-black border-emerald-500/20";
+                toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-700"></i> ${message}`;
+            } else {
+                toast.className += "bg-red-950 text-[#FAF6EE] border-red-500/30";
+                toast.innerHTML = `<i class="fa-solid fa-circle-exclamation text-red-500"></i> ${message}`;
+            }
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
+        }
+
+        // --- SISTEM DETEKSI PARAMETER URL & UUID PERSISTENT ---
+        const urlParams = new URLSearchParams(window.location.search);
+        let activeCardId = urlParams.get('card') || urlParams.get('card_id');
+
+        // Pengelolaan UUID lokal persistent
+        function checkAndGenerateLocalUUID() {
+            let uuid = localStorage.getItem('cinesnax_local_uuid');
+            if (!uuid) {
+                // Generate simple pseudo-UUID
+                uuid = 'CS-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 10);
+                localStorage.setItem('cinesnax_local_uuid', uuid);
+            }
+            return uuid;
+        }
+
+        localUUID = checkAndGenerateLocalUUID();
+        currentSessionId = "SES-" + Date.now() + "-" + Math.random().toString(36).substring(2, 8);
+
+        // Update visual HUD
+        document.getElementById('debug-card-id').textContent = activeCardId || "KOSONG / NULL";
+        document.getElementById('debug-uuid').textContent = localUUID;
+        document.getElementById('debug-backend-url').textContent = API_BASE_URL;
+
+        // --- FETCH DATA KARTU DENGAN SINKRONISASI TELEMETRI ---
+        async function fetchCardData(cardId) {
+            const apiStatus = document.getElementById('debug-api-status');
+            apiStatus.textContent = "Mengirim Sinyal Verifikasi... 📡";
+            apiStatus.className = "text-yellow-400 font-bold animate-pulse";
+
+            try {
+                // Fetch melempar local UUID dan sessionId agar data telemetri edge disimpan sejak detik pertama
+                const response = await fetch(`${API_BASE_URL}/api/card/${cardId}?uuid=${localUUID}&sessionId=${currentSessionId}`);
+                
+                if (response.status === 404) {
+                    apiStatus.textContent = "Error D1: Kartu 404";
+                    apiStatus.className = "text-red-500 font-bold";
+                    throw new Error(`ID Kartu "${cardId}" tidak terdaftar dalam database kami.`);
+                }
+
+                if (!response.ok) {
+                    apiStatus.textContent = `Server Error [Status ${response.status}]`;
+                    apiStatus.className = "text-red-500 font-bold";
+                    throw new Error("Gagal memperoleh data sah dari Cloudflare Worker.");
+                }
+
+                const data = await response.json();
+                apiStatus.textContent = "Pipeline D1 Terhubung (200 OK)";
+                apiStatus.className = "text-green-400 font-bold";
+                return data;
+
+            } catch (err) {
+                apiStatus.textContent = "Krisis Koneksi Edge Gateway";
+                apiStatus.className = "text-red-500 font-bold";
+                showToast(err.message, "error");
+                throw err;
+            }
+        }
+
+        // --- SISTEM PEMUTARAN TYPEWRITER ---
+        function typeHtml(htmlText, elementId, speed, callback) {
+            const el = document.getElementById(elementId); 
+            el.innerHTML = ""; 
+            el.classList.add('cursor');
+            let i = 0, currentText = "";
+            function type() {
+                if (i < htmlText.length) {
+                    if (htmlText.slice(i).startsWith("<br>")) { currentText += "<br>"; i += 4; }
+                    else if (htmlText.slice(i).startsWith("<hr>")) { currentText += "<hr class='my-2 border-white/10'>"; i += 4; }
+                    else { currentText += htmlText.charAt(i); i++; }
+                    el.innerHTML = currentText; 
+                    setTimeout(type, speed);
+                } else { 
+                    el.classList.remove('cursor'); 
+                    if (callback) callback(); 
+                }
+            }
+            type();
+        }
+
+        // --- LIFE CYCLE: DOM CONTENT LOADED ---
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!activeCardId) {
+                renderCriticalUIError("Parameter Kartu Kosong", "PWA tidak mendeteksi ID unik kartu pada bar URL. Silakan hubungkan parameter valid, contoh: <code>/?card=demo-love-99</code>");
+                return;
+            }
+
+            try {
+                const responseData = await fetchCardData(activeCardId);
+                activeCardData = responseData.card;
+                
+                isCardVerified = true;
+
+                // Bind data dinamis pada label dan disclaimer
+                document.getElementById('x-disclaimer-url').textContent = activeCardData.youtube_id || "No Live Connection";
+                document.getElementById('y-disclaimer-url').textContent = activeCardData.youtube_id || "No Live Connection";
+                document.getElementById('z-disclaimer-url').textContent = activeCardData.youtube_id || "No Live Connection";
+                
+                document.getElementById('y-card-lbl').innerHTML = `Kartu Deleted-Scene<br>${activeCardData.card_number}`;
+
+                // Inisialisasi tombol X-Button
+                const btnX = document.getElementById('btn-x-action');
+                btnX.disabled = false;
+                btnX.className = "w-full h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-[11px] px-4 py-3 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 border border-white/10 blinking-btn cursor-pointer";
+                btnX.innerHTML = `<span>Unboxing Deleted-Scene<br>${activeCardData.card_number}</span>`;
+
+            } catch (err) {
+                renderCriticalUIError("Validasi Gagal", err.message);
+            }
+        });
+
+        // Tampilan Kegagalan Sistem Transparan
+        function renderCriticalUIError(title, msg) {
+            const container = document.getElementById('x-video');
+            container.innerHTML = `
+                <div class="text-left font-mono bg-red-950/40 border border-red-500/30 p-4 rounded-2xl space-y-2 text-[10.5px] w-full">
+                    <span class="text-red-400 font-bold block">[ERROR: ${title}]</span>
+                    <span class="text-gray-300 block leading-relaxed break-words">${msg}</span>
+                    <hr class="border-white/10">
+                    <span class="text-[#DEFF9A] block text-[9.5px] leading-relaxed">💡 Gunakan kartu demo untuk peninjauan uji coba: <code>/?card=demo-love-99</code></span>
+                </div>`;
+            const btnX = document.getElementById('btn-x-action');
+            btnX.disabled = true;
+            btnX.className = "w-full h-full bg-red-950 text-red-400 border border-red-500/30 font-bold text-xs px-4 py-3 rounded-2xl cursor-not-allowed";
+            btnX.innerHTML = `<span>Validasi Edge Gagal ❌</span>`;
+        }
+
+        // --- PROSES TRANSISI LAYAR DAN INTERAKSI ---
+        let xButtonState = 0; // 0: Init, 1: Shorts playing, 2: Transit to Y
+        
+        document.getElementById('btn-x-action').addEventListener('click', function() {
+            playButtonClickSound();
+            if (!isCardVerified || !activeCardData) return;
+
+            if (xButtonState === 0) {
+                // Sembunyikan hati, pasang YouTube Shorts
+                document.getElementById('x-heart-wrapper').classList.add('hidden');
+                const iframeWrapper = document.getElementById('x-iframe-wrapper');
+                iframeWrapper.innerHTML = `<iframe class="w-full h-full rounded-3xl" src="https://www.youtube.com/embed/ySZZ10JjvNg?autoplay=1&controls=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+                iframeWrapper.classList.remove('hidden');
+
+                // Update text tombol X
+                this.innerHTML = `<span>Siap untuk menemukan Spoiler adegan yang mestinya dibuang itu?</span>`;
+                xButtonState = 1;
+            } else if (xButtonState === 1) {
+                // Transisi ke Screen Y
+                transitionToScreenY();
+            }
+        });
+
+        function transitionToScreenY() {
+            screen2StartTime = Date.now();
+            document.getElementById('screen-x').classList.add('fade-blur-out');
+            setTimeout(() => {
+                document.getElementById('screen-x').classList.add('hidden');
+                const screenY = document.getElementById('screen-y');
+                screenY.classList.remove('hidden');
+                
+                // Mulai menggerakkan partikel di area Screen Y
+                updateCoordinates();
+
+                // Simulasi typewriter di Screen Y
+                const cliffhanger = activeCardData.cliffhanger_text || "..." ;
+                const reveal = activeCardData.reveal_text || "...";
+                
+                // Rangkai teks typewriter dengan separator
+                const formattedHtmlText = `<span class="text-white block font-sans">${cliffhanger}</span>`;
+                
+                typeHtml(formattedHtmlText, "y-typewritten", 30, () => {
+                    // Jeda 2 detik dengan kursor berkedip
+                    const wrapper = document.getElementById('y-typewritten');
+                    wrapper.classList.add('cursor');
+                    
+                    setTimeout(() => {
+                        wrapper.classList.remove('cursor');
+                        const nextHtml = formattedHtmlText + `<hr class="my-3 border-white/20"><span class="text-yellow-400 block font-bold font-sans animate-pulse">${reveal}</span>`;
+                        
+                        typeHtml(nextHtml, "y-typewritten", 30, () => {
+                            // Aktifkan Y-Button
+                            const btnY = document.getElementById('btn-y-action');
+                            btnY.disabled = false;
+                            btnY.className = "w-full h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-[11px] px-4 py-3 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 border border-white/10 blinking-btn cursor-pointer";
+                            btnY.innerHTML = `<span>Play Rekomendasi Spesial SoundtraXofUs Untukmu.. 🎬</span>`;
+                        });
+                    }, 2000);
+                });
+            }, 600);
+        }
+
+        // State interaksi tombol Y-Button
+        let yButtonState = 0; // 0: Init, 1: Playing trailer, 2: Transition to Z
+        
+        document.getElementById('btn-y-action').addEventListener('click', function() {
+            playButtonClickSound();
+            if (yButtonState === 0) {
+                // Ganti visual Y-Video menjadi Iframe Youtube Trailer bawaan D1
+                document.getElementById('y-heart-wrapper').classList.add('hidden');
+                const iframeWrapper = document.getElementById('y-iframe-wrapper');
+                
+                const ytId = activeCardData.youtube_id || "ySZZ10JjvNg";
+                iframeWrapper.innerHTML = `<iframe class="w-full h-full rounded-3xl" src="https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+                iframeWrapper.classList.remove('hidden');
+
+                // Kunci tombol selama 30 detik untuk memberikan waktu menonton
+                this.disabled = true;
+                this.className = "w-full h-full bg-gray-800 text-gray-500 font-bold text-[11px] px-4 py-3 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 border border-white/5 cursor-not-allowed";
+                
+                let secondsLeft = 30;
+                const countdownInterval = setInterval(() => {
+                    secondsLeft--;
+                    if (secondsLeft > 0) {
+                        this.innerHTML = `<span>Mengevaluasi soundtrack bersama... (${secondsLeft}s)</span>`;
+                    } else {
+                        clearInterval(countdownInterval);
+                        this.disabled = false;
+                        this.className = "w-full h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 text-white font-bold text-[11px] px-4 py-3 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 border border-white/10 blinking-btn cursor-pointer";
+                        this.innerHTML = `<span>Stop video SoundtraXofUs<br>dan mari kita ngobrol sebentar...</span>`;
+                        yButtonState = 1;
+                    }
+                }, 1000);
+
+            } else if (yButtonState === 1) {
+                // Stop Youtube Video Iframe
+                document.getElementById('y-iframe-wrapper').innerHTML = "";
+                // Jalankan Synth Hum Rol Film
+                initAudioFX();
+                playReelHum();
+                // Transisi ke Z
+                transitionToScreenZ();
+            }
+        });
+
+        function transitionToScreenZ() {
+            screen3StartTime = Date.now();
+            document.getElementById('screen-y').classList.add('fade-blur-out');
+            setTimeout(() => {
+                document.getElementById('screen-y').classList.add('hidden');
+                const screenZ = document.getElementById('screen-z');
+                screenZ.classList.remove('hidden');
+                screenZ.classList.add('roll-up-in');
+                
+                // Pindahkan koordinat canvas partikel
+                updateCoordinates();
+
+                // Pasang Teks Cliffhanger & Reveal pada Z-TextB secara statis
+                document.getElementById('z-static-texts').innerHTML = `
+                    <span class="text-white block font-sans">${activeCardData.cliffhanger_text}</span>
+                    <hr class="my-2 border-white/10">
+                    <span class="text-yellow-400 font-bold block font-sans">${activeCardData.reveal_text}</span>
+                `;
+
+                // Mulai sistem kuis interogasi
+                renderQuestionState();
+            }, 600);
+        }
+
+        // ==========================================
+        // ALGORITMA PERCAKAPAN BERBANTUAN KUIS L3
+        // ==========================================
+        let currentLevel = 1;
+        let userAnswersLog = [];
+        
+        const quizTree = {
+            level1: {
+                question: "Menyaksikan dejavu tadi, apakah ini potongan memori yang pernah kalian rajut bersama, atau sekadar ilusi indah?",
+                optA: "Memori Bersama",
+                optB: "Ilusi Indah",
+                nextA: "level2A",
+                nextB: "level2B"
+            },
+            level2A: {
+                question: "Jika itu nyata, apakah kalian ingin memutar kembali momen tersebut selamanya, atau membiarkannya abadi dalam lembaran masa lalu?",
+                optA: "Putar Kembali",
+                optB: "Biarkan Abadi",
+                nextA: "end_memori_putar",
+                nextB: "end_memori_abadi"
+            },
+            level2B: {
+                question: "Meski sekadar ilusi, apakah dejavu ini membuat kalian sadar ada babak baru yang ingin kalian tulis bersama?",
+                optA: "Ingin Menulisnya",
+                optB: "Cukup Dikagumi",
+                nextA: "end_ilusi_tulis",
+                nextB: "end_ilusi_kagum"
+            }
+        };
+
+        const conclusions = {
+            end_memori_putar: {
+                summary: "Momen manis yang terekam adalah jangkar emosi yang kuat bagi jalinan hati kalian.",
+                cta: "Sangat Bersyukur! Rawatlah selalu kebersamaan ini agar tidak lapuk dimakan waktu dan kerasnya dunia."
+            },
+            end_memori_abadi: {
+                summary: "Menghargai masa lalu yang indah tanpa terjebak di dalamnya membuktikan kedewasaan cinta kalian.",
+                cta: "Refleksi Sukses! Kalian berdua siap melangkah beriringan mengukir naskah adegan romantis baru."
+            },
+            end_ilusi_tulis: {
+                summary: "Harapan manis yang lahir malam ini adalah awal dari petualangan indah yang menanti untuk diwujudkan.",
+                cta: "Coming Soon! Mulailah menulis babak baru hubungan kalian dengan penuh keberanian mulai malam ini."
+            },
+            end_ilusi_kagum: {
+                summary: "Menikmati keindahan rasa tanpa hasrat mendominasi membuktikan cinta kalian telah menemukan kedamaian.",
+                cta: "Tetap Bersabar! Biarkan semesta bekerja merajut takdir terindahnya di waktu yang tepat."
+            }
+        };
+
+        function renderQuestionState() {
+            let activeNode = null;
+            if (currentLevel === 1) {
+                activeNode = quizTree.level1;
+            } else if (currentLevel === 2) {
+                const prevAns = userAnswersLog[0];
+                activeNode = (prevAns === "Memori Bersama") ? quizTree.level2A : quizTree.level2B;
+            }
+
+            if (activeNode) {
+                document.getElementById('z-question-lbl').innerText = `Level ${currentLevel}: Interogasi`;
+                document.getElementById('z-question-text').innerText = activeNode.question;
+                
+                const btnLeft = document.getElementById('btn-z-left');
+                const btnRight = document.getElementById('btn-z-right');
+
+                btnLeft.innerHTML = `<span>[${activeNode.optA}]</span>`;
+                btnRight.innerHTML = `<span>[${activeNode.optB}]</span>`;
+
+                // Set callback klik
+                btnLeft.onclick = () => handleAnswer(activeNode.optA, activeNode.nextA);
+                btnRight.onclick = () => handleAnswer(activeNode.optB, activeNode.nextB);
+            }
+        }
+
+        async function handleAnswer(answerText, nextStep) {
+            playButtonClickSound();
+            userAnswersLog.push(answerText);
+
+            if (nextStep.startsWith("end_")) {
+                // Selesaikan interogasi, hentikan proyektor sound FX
+                stopReelHum();
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.65 } });
+                
+                const result = conclusions[nextStep];
+                
+                // Simpan respon ke database D1 secara real-time
+                await submitUserResponses(result.summary);
+
+                // Update Z-TextA dengan ringkasan jawaban
+                document.getElementById('z-question-lbl').innerText = "🍿 KESIMPULAN SUTRADARA SEMESTA";
+                typeHtml(result.summary, "z-question-text", 25, null);
+
+                // Update Z-TextB dengan Call to Action Refleksi
+                document.getElementById('z-static-header').innerText = "💡 ARAHAN UNTUK KALIAN:";
+                document.getElementById('z-static-texts').innerText = result.cta;
+
+                // Konfigurasi Z-Button area menjadi 3 bagian (Feedback, Koleksi, Selesai)
+                const buttonArea = document.getElementById('z-button-area');
+                buttonArea.innerHTML = `
+                    <button id="btn-show-feedback" class="w-1/3 py-3 bg-[#121318] border border-amber-500/20 text-gray-200 font-bold text-[9.5px] rounded-xl shadow-md transition-all">
+                        💡 Beri Feedback
+                    </button>
+                    <button id="btn-show-collection" class="w-1/3 py-3 bg-gradient-to-tr from-amber-500 to-yellow-400 text-black font-extrabold text-[9.5px] rounded-xl shadow-md transition-all">
+                        📚 Koleksi Kartu
+                    </button>
+                    <button id="btn-the-end" class="w-1/3 py-3 bg-red-950 border border-red-500/30 text-red-200 font-bold text-[9.5px] rounded-xl shadow-md transition-all">
+                        🎬 The End
+                    </button>
+                `;
+
+                // Bind listener ke 3 tombol baru tersebut
+                document.getElementById('btn-show-feedback').onclick = () => enableFeedbackInput();
+                document.getElementById('btn-show-collection').onclick = () => loadUserScannedCollection();
+                document.getElementById('btn-the-end').onclick = () => {
+                    playButtonClickSound();
+                    document.getElementById('hover-cta-modal').classList.remove('hidden');
+                };
+
+            } else {
+                currentLevel++;
+                renderQuestionState();
+            }
+        }
+
+        // --- SUBMIT JAWABAN KUIS KE CLOUDFLARE D1 ---
+        async function submitUserResponses(summary) {
+            const payload = {
+                sessionId: currentSessionId,
+                uuid: localUUID,
+                cardId: activeCardId,
+                level1: userAnswersLog[0] || "None",
+                level2: userAnswersLog[1] || "None",
+                level3: "None", // Kuis L3 disesuaikan ke struktur 3-tingkat opsional
+                summaryText: summary
+            };
+
+            try {
+                await fetch(`${API_BASE_URL}/api/responses`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (err) {
+                console.warn("Gagal merekam respon kuis ke Cloudflare D1.", err);
+            }
+        }
+
+        // --- MANIPULASI AREA FEEDBACK ---
+        function enableFeedbackInput() {
+            playButtonClickSound();
+            document.getElementById('z-static-header').classList.add('hidden');
+            document.getElementById('z-static-texts').classList.add('hidden');
+            
+            const feedbackBox = document.getElementById('z-feedback-box');
+            feedbackBox.classList.remove('hidden');
+
+            document.getElementById('btn-show-feedback').disabled = true;
+            document.getElementById('btn-show-feedback').className = "w-1/3 py-3 bg-gray-900 text-gray-600 border border-white/5 font-bold text-[9.5px] rounded-xl cursor-not-allowed";
+
+            document.getElementById('btn-submit-feedback').onclick = async () => {
+                playButtonClickSound();
+                const text = document.getElementById('feedback-input').value.trim();
+                if (!text) {
+                    showToast("Harap ketik saran Anda terlebih dahulu.", "error");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/feedback`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: currentSessionId,
+                            uuid: localUUID,
+                            cardId: activeCardId,
+                            feedbackText: text
+                        })
+                    });
+
+                    if (response.ok) {
+                        showToast("Feedback Anda aman disimpan di Edge Network! 🍿");
+                        feedbackBox.innerHTML = `<div class="text-center text-xs text-[#DEFF9A] font-bold py-4">🔒 TERIMAKASIH ATAS KONTRIBUSI ANDA</div>`;
+                    }
+                } catch (e) {
+                    showToast("Gagal mengirim umpan balik.", "error");
+                }
+            };
+        }
+
+        // --- MANIPULASI AREA DAFTAR KOLEKSI SCAN KARTU ---
+        async function loadUserScannedCollection() {
+            playButtonClickSound();
+            
+            // Sembunyikan text asli dan box feedback
+            document.getElementById('z-static-header').classList.add('hidden');
+            document.getElementById('z-static-texts').classList.add('hidden');
+            document.getElementById('z-feedback-box').classList.add('hidden');
+            
+            const colBox = document.getElementById('z-collection-box');
+            colBox.classList.remove('hidden');
+
+            const listContainer = document.getElementById('collection-list');
+            listContainer.innerHTML = `<p class="text-[9px] text-gray-500 text-center py-4"><i class="fa-solid fa-spinner animate-spin"></i> Menghubungkan ke Cloudflare D1...</p>`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/scanned/${localUUID}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    listContainer.innerHTML = "";
+                    
+                    if (data.collection.length === 0) {
+                        listContainer.innerHTML = `<p class="text-[10px] text-gray-400 text-center py-4">Belum ada riwayat kartu pada ponsel ini.</p>`;
+                        return;
+                    }
+
+                    data.collection.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = "p-2 bg-[#121318] hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 rounded-xl transition-all cursor-pointer flex justify-between items-center";
+                        div.innerHTML = `
+                            <div>
+                                <p class="text-[10px] font-bold text-amber-400">${item.card_number}</p>
+                                <p class="text-[8.5px] text-gray-400 truncate max-w-[180px]">${item.cliffhanger_text}</p>
+                            </div>
+                            <span class="text-[8px] font-mono text-gray-500"><i class="fa-solid fa-play"></i></span>
+                        `;
+                        div.onclick = () => {
+                            playButtonClickSound();
+                            // Reload PWA menggunakan Card ID baru yang diklik
+                            window.location.search = `?card=${item.card_id}`;
+                        };
+                        listContainer.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                listContainer.innerHTML = `<p class="text-[10px] text-red-400 text-center">Gagal memuat daftar koleksi.</p>`;
+            }
+        }
+
+        // ==========================================
+        // AMBIENT ENGINE: LATAR BELAKANG PARTIKEL EMAS
+        // ==========================================
+        const canvas = document.getElementById('particle-canvas'); 
+        const ctx = canvas.getContext('2d');
+        let particles = [], spawnY = window.innerHeight;
+
+        function updateCoordinates() {
+            let activeFooter = document.querySelector('#screen-x footer');
+            if (!document.getElementById('screen-z').classList.contains('hidden')) {
+                activeFooter = document.querySelector('#screen-z footer');
+            } else if (!document.getElementById('screen-y').classList.contains('hidden')) {
+                activeFooter = document.querySelector('#screen-y footer');
+            }
+            if (activeFooter) {
+                spawnY = activeFooter.getBoundingClientRect().top;
+            }
+        }
+
+        function resizeCanvas() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
+            updateCoordinates(); 
+        }
+        
+        window.addEventListener('resize', resizeCanvas); 
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x; 
+                this.y = y || spawnY;
+                this.speedY = -(Math.random() * 0.7 + 0.3); 
+                this.speedX = Math.random() * 0.3 - 0.15;
+                this.size = Math.random() * 2 + 2; 
+                this.life = 0; 
+                this.maxLife = 220;
+            }
+            update() { 
+                this.life++; 
+                this.y += this.speedY; 
+                this.x += this.speedX; 
+            }
+            draw() {
+                ctx.beginPath(); 
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fillStyle = "rgba(218, 165, 32, 0.35)"; 
+                ctx.fill();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (particles.length < 25 && Math.random() < 0.08) {
+                particles.push(new Particle(Math.random() * canvas.width));
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update(); 
+                particles[i].draw();
+                if (particles[i].life > particles[i].maxLife || particles[i].y < 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
